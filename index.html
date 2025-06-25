@@ -1,356 +1,422 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-<meta name="description" content="Hallway of Doom Clocks - symbolic countdowns, Islamic perspective, and scientific timelines." />
-<title>Hallway of Doom Clocks</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hallway of Doom Clocks</title>
+  <meta name="description" content="An immersive, symbolic exploration of humanity's existential clocks — Doomsday, Climate, AI, and Islamic perspective." />
+  
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Space+Grotesk:wght@400;600&display=swap" rel="stylesheet" />
+  
+  <!-- GSAP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  
+  <!-- Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r154/three.min.js"></script>
+  
+  <!-- Prism.js for code highlight -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-twilight.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
 
-<!-- Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Space+Grotesk:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    /*
+    ------------------------------------------
+    RESET + BASE
+    ------------------------------------------
+    */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+    html, body {
+      margin: 0; padding: 0;
+      font-family: 'Space Grotesk', sans-serif;
+      background: #0b0b0b;
+      color: #e6e6e6;
+      line-height: 1.5;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+    }
+    a {
+      color: #fa1e0e;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+    a:hover, a:focus {
+      color: #ff4b3e;
+      outline: none;
+    }
+    h1,h2,h3,h4,h5,h6 {
+      font-family: 'Share Tech Mono', monospace;
+      margin-bottom: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+    }
+    h1 { font-size: 3rem; }
+    h2 { font-size: 2.25rem; }
+    h3 { font-size: 1.75rem; }
+    p {
+      max-width: 900px;
+      margin-bottom: 1.5rem;
+      font-weight: 400;
+      color: #ddd;
+    }
+    ul {
+      margin-left: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    ul li {
+      margin-bottom: 0.6rem;
+    }
+    button {
+      font-family: 'Space Grotesk', sans-serif;
+      cursor: pointer;
+      background: #fa1e0e;
+      border: none;
+      color: #fff;
+      padding: 0.8rem 1.2rem;
+      border-radius: 6px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      user-select: none;
+      transition: background-color 0.3s ease;
+    }
+    button:hover, button:focus {
+      background: #ff4b3e;
+      outline: none;
+    }
 
-<!-- Prism.js Syntax Highlighting -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-twilight.min.css" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" defer></script>
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 10px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #111;
+    }
+    ::-webkit-scrollbar-thumb {
+      background-color: #fa1e0e;
+      border-radius: 10px;
+      border: 2px solid #111;
+    }
 
-<!-- GSAP and ScrollTrigger -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" defer></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js" defer></script>
+    /*
+    ------------------------------------------
+    LAYOUT CONTAINERS
+    ------------------------------------------
+    */
+    header {
+      text-align: center;
+      padding: 4rem 1rem 2rem 1rem;
+      position: relative;
+      z-index: 10;
+    }
+    header p {
+      max-width: 620px;
+      margin: 0 auto;
+      font-weight: 300;
+      font-size: 1.125rem;
+      opacity: 0.75;
+    }
+    main {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 2rem 1rem 6rem 1rem;
+      position: relative;
+      z-index: 10;
+    }
+    section {
+      margin-bottom: 6rem;
+      opacity: 0; /* hidden for scroll animation */
+      transform: translateY(60px);
+    }
+    section.active {
+      opacity: 1 !important;
+      transform: translateY(0) !important;
+      transition: opacity 1s ease, transform 1s ease;
+    }
 
-<!-- Three.js -->
-<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js" defer></script>
+    /*
+    ------------------------------------------
+    CLOCK DISPLAYS
+    ------------------------------------------
+    */
+    .clock-display {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 3.5rem;
+      text-align: center;
+      color: #50ff75;
+      background-color: #111;
+      padding: 1.5rem 2rem;
+      border-radius: 12px;
+      box-shadow:
+        0 0 15px #50ff75,
+        inset 0 0 12px #0c6d38;
+      user-select: none;
+      max-width: 320px;
+      margin: 2rem auto 0 auto;
+      letter-spacing: 0.2em;
+    }
+    /* AI Clock digits container */
+    .digital-clock {
+      display: flex;
+      justify-content: center;
+      gap: 0.4rem;
+      font-size: 4rem;
+      user-select: none;
+      margin-top: 2rem;
+    }
+    .digital-clock .digit {
+      background: #0d0d0d;
+      color: #50ff75;
+      border-radius: 8px;
+      padding: 0.3rem 0.8rem;
+      width: 2.3rem;
+      text-align: center;
+      font-weight: 700;
+      box-shadow: 0 0 8px #1fa23c;
+      transition: all 0.4s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .digital-clock .colon {
+      font-weight: 700;
+      padding: 0 0.4rem;
+      line-height: 1;
+      color: #88ff9a;
+      user-select: none;
+    }
+    /* Rolling animation for digit changes */
+    .digit-rolling {
+      animation: rollDigit 0.4s ease forwards;
+    }
+    @keyframes rollDigit {
+      0% { transform: translateY(-100%); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
 
-<style>
-  /* === Root Colors & Variables === */
-  :root {
-    --bg: #0b0b0b;
-    --bg-gradient: linear-gradient(135deg, #121212 0%, #1d1d1d 100%);
-    --text: #e8e8e8;
-    --text-muted: #999999;
-    --accent: #e63946;
-    --accent-dark: #b52b3a;
-    --clock-bg: #111111;
-    --clock-glow: #2af598;
-    --code-bg: #1e1e1e;
-    --code-text: #72e2ae;
-    --shadow-glow: rgba(42, 245, 152, 0.4);
-    --scrollbar-bg: #222;
-    --scrollbar-thumb: #555;
-    --scrollbar-thumb-hover: var(--accent);
-    --font-mono: 'Share Tech Mono', monospace;
-    --font-sans: 'Space Grotesk', sans-serif;
-  }
+    /*
+    ------------------------------------------
+    BUTTONS
+    ------------------------------------------
+    */
+    #backToTopBtn {
+      position: fixed;
+      bottom: 2.5rem;
+      right: 2.5rem;
+      background: #fa1e0e;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      border: none;
+      color: white;
+      font-size: 2rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+      z-index: 999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      user-select: none;
+    }
+    #backToTopBtn.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
 
-  /* === Reset & Base === */
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
+    /*
+    ------------------------------------------
+    IFRAME STYLES
+    ------------------------------------------
+    */
+    iframe {
+      width: 100%;
+      height: 350px;
+      border: none;
+      border-radius: 14px;
+      margin-top: 1.75rem;
+      box-shadow: 0 0 12px #fa1e0eaa;
+      user-select: none;
+      pointer-events: auto;
+    }
 
-  html, body {
-    height: 100%;
-    background: var(--bg-gradient);
-    color: var(--text);
-    font-family: var(--font-sans);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    line-height: 1.5;
-    scroll-behavior: smooth;
-    overflow-x: hidden;
-  }
+    /*
+    ------------------------------------------
+    CODE SNIPPET
+    ------------------------------------------
+    */
+    pre {
+      background: #111;
+      color: #8cff8c;
+      padding: 1.2rem 1.5rem;
+      border-radius: 10px;
+      font-family: 'Share Tech Mono', monospace;
+      overflow-x: auto;
+      max-width: 100%;
+      box-shadow: inset 0 0 20px #0a0;
+      user-select: text;
+    }
 
-  /* Scrollbar */
-  ::-webkit-scrollbar {
-    width: 10px;
-    background: var(--scrollbar-bg);
-  }
-  ::-webkit-scrollbar-thumb {
-    background: var(--scrollbar-thumb);
-    border-radius: 8px;
-    transition: background 0.3s;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background: var(--scrollbar-thumb-hover);
-  }
+    /*
+    ------------------------------------------
+    DISCLAIMER BOX
+    ------------------------------------------
+    */
+    .disclaimer {
+      background-color: #1b1b1b;
+      border-left: 5px solid #fa1e0e;
+      padding: 2rem 2rem;
+      margin: 3rem auto 6rem auto;
+      max-width: 900px;
+      box-shadow: 0 0 15px #fa1e0e55;
+      user-select: text;
+      color: #e4e4e4;
+    }
+    .disclaimer strong {
+      color: #fa1e0e;
+    }
 
-  a {
-    color: var(--accent);
-    text-decoration: none;
-    transition: color 0.3s ease;
-  }
-  a:hover,
-  a:focus {
-    color: var(--accent-dark);
-    outline: none;
-    text-decoration: underline;
-  }
+    /*
+    ------------------------------------------
+    ADDITIONAL INFO & FOOTER
+    ------------------------------------------
+    */
+    .additional-info {
+      max-width: 900px;
+      margin: 0 auto 6rem auto;
+      font-size: 1rem;
+      color: #aaa;
+      line-height: 1.4;
+      user-select: text;
+    }
+    footer {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #666;
+      padding-bottom: 4rem;
+      user-select: none;
+      border-top: 1px solid #222;
+      max-width: 900px;
+      margin: 0 auto;
+    }
 
-  h1, h2, h3, h4 {
-    font-family: var(--font-mono);
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    color: var(--accent);
-    letter-spacing: 1.5px;
-  }
-  h1 { font-size: 3.4rem; }
-  h2 { font-size: 2.2rem; }
-  h3 { font-size: 1.6rem; }
+    /*
+    ------------------------------------------
+    THREE.JS HALLWAY CONTAINER
+    ------------------------------------------
+    */
+    #hallway-container {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1;
+      pointer-events: none;
+      user-select: none;
+      background: linear-gradient(90deg, #080808 0%, #0f0f0f 40%, #111111 60%, #080808 100%);
+    }
 
-  p, ul {
-    font-size: 1.1rem;
-    max-width: 780px;
-    color: var(--text);
-    margin-bottom: 1.2rem;
-  }
-  ul {
-    padding-left: 1.4rem;
-    list-style-type: disc;
-    color: var(--text-muted);
-  }
-  li {
-    margin-bottom: 0.5rem;
-    line-height: 1.35;
-  }
-
-  /* Layout & Containers */
-  header, section, footer {
-    max-width: 900px;
-    margin-left: auto;
-    margin-right: auto;
-    padding: 3rem 1rem 5rem 1rem;
-    scroll-margin-top: 100px;
-  }
-  header {
-    padding-top: 5rem;
-    padding-bottom: 5rem;
-    text-align: center;
-  }
-  footer {
-    text-align: center;
-    font-size: 0.9rem;
-    color: var(--text-muted);
-    padding-bottom: 4rem;
-  }
-
-  /* Disclaimers */
-  .disclaimer {
-    background: #1b1b1b;
-    border-left: 5px solid var(--accent);
-    padding: 2rem 2.4rem;
-    margin: 3rem 0 6rem 0;
-    font-size: 1rem;
-    line-height: 1.6;
-    color: var(--text-muted);
-  }
-  .disclaimer strong {
-    color: var(--accent);
-  }
-
-  /* Clock Display */
-  .clock-display {
-    margin-top: 1.5rem;
-    font-family: var(--font-mono);
-    font-weight: 700;
-    font-size: 3.8rem;
-    background: var(--clock-bg);
-    border-radius: 12px;
-    padding: 1.4rem 3rem;
-    width: max-content;
-    box-shadow:
-      0 0 12px var(--clock-glow),
-      inset 0 0 30px var(--clock-glow);
-    color: var(--clock-glow);
-    letter-spacing: 0.16em;
-    user-select: none;
-  }
-
-  /* Digital Clock Container for Animated Digits */
-  .digital-clock {
-    display: flex;
-    gap: 0.15em;
-    justify-content: center;
-    user-select: none;
-  }
-  .digital-clock .digit,
-  .digital-clock .colon {
-    width: 2rem;
-    height: 3.6rem;
-    background: #101010;
-    border-radius: 4px;
-    box-shadow:
-      inset 0 -3px 5px #0f0,
-      0 0 12px #0f0aa0;
-    color: #0f0;
-    font-family: var(--font-mono);
-    font-size: 3.2rem;
-    font-weight: 700;
-    text-align: center;
-    line-height: 3.6rem;
-    position: relative;
-    overflow: hidden;
-    transition: background 0.3s ease;
-  }
-  .digital-clock .colon {
-    width: 1rem;
-    background: transparent;
-    box-shadow: none;
-    color: #0f0;
-    font-weight: 900;
-    user-select: none;
-  }
-  /* Digit rolling animation */
-  .digit-rolling {
-    animation: rollDigit 0.4s ease forwards;
-  }
-  @keyframes rollDigit {
-    0% { transform: translateY(-100%); opacity: 0.2; }
-    100% { transform: translateY(0); opacity: 1; }
-  }
-
-  /* Responsive */
-  @media (max-width: 600px) {
-    header h1 { font-size: 2.2rem; }
-    .clock-display { font-size: 2.8rem; padding: 1rem 2rem; }
-    p, ul { font-size: 1rem; }
-  }
-
-  /* Pre code styling */
-  pre {
-    background: var(--code-bg);
-    color: var(--code-text);
-    padding: 1.6rem;
-    border-radius: 8px;
-    font-family: var(--font-mono);
-    font-size: 1rem;
-    overflow-x: auto;
-    max-width: 90vw;
-    margin: 3rem auto 6rem auto;
-    box-shadow: inset 0 0 12px #056d56;
-    user-select: text;
-  }
-
-  /* Button for back to top */
-  #backToTopBtn {
-    position: fixed;
-    bottom: 2.5rem;
-    right: 2.5rem;
-    background: var(--accent);
-    border: none;
-    border-radius: 50%;
-    width: 48px;
-    height: 48px;
-    color: white;
-    font-weight: 700;
-    font-size: 1.5rem;
-    cursor: pointer;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
-    box-shadow: 0 0 12px var(--accent);
-    z-index: 99;
-  }
-  #backToTopBtn.show {
-    opacity: 1;
-    pointer-events: auto;
-  }
-  #backToTopBtn:focus {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
-
-  /* Scroll-trigger reveal animation */
-  .reveal {
-    opacity: 0;
-    transform: translateY(60px);
-    transition: opacity 0.7s ease, transform 0.7s ease;
-  }
-  .reveal.active {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  /* Hallway container and canvas */
-  #hallway-container {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100vw; height: 100vh;
-    pointer-events: none;
-    z-index: -1;
-    background: transparent;
-  }
-</style>
-
+    /*
+    ------------------------------------------
+    RESPONSIVE
+    ------------------------------------------
+    */
+    @media (max-width: 768px) {
+      header h1 { font-size: 2.25rem; }
+      .clock-display {
+        font-size: 2.5rem;
+        max-width: 260px;
+      }
+      .digital-clock {
+        font-size: 2.8rem;
+        gap: 0.25rem;
+      }
+      .digital-clock .digit {
+        width: 1.8rem;
+        padding: 0.25rem 0.5rem;
+      }
+      iframe {
+        height: 280px;
+      }
+    }
+  </style>
 </head>
 <body>
+  <!-- 3D hallway background -->
+  <div id="hallway-container" aria-hidden="true"></div>
 
-<!-- Three.js 3D hallway container -->
-<div id="hallway-container" aria-hidden="true"></div>
+  <header role="banner">
+    <h1>Hallway of Doom Clocks</h1>
+    <p>Scroll through humanity's symbolic countdowns: scientific, political, and speculative timelines reflecting existential risks.</p>
+  </header>
 
-<header role="banner" aria-label="Site header" class="reveal">
-  <h1>Hallway of Doom Clocks</h1>
-  <p>Scroll through humanity's most pressing countdowns — symbolic, scientific, and political timelines of risk and reflection.</p>
-</header>
+  <main role="main" tabindex="-1">
+    <!-- Disclaimer -->
+    <section class="disclaimer" role="alert" aria-live="assertive">
+      <h2>Disclaimer &amp; Intent</h2>
+      <p><strong>Important:</strong> The clocks shown here, including the Doomsday Clock and Climate Clock, are <strong>symbolic human constructs</strong>. They do <em>not</em> represent divine prophecy or a definitive prediction of the future.</p>
+      <p>This site aims to <strong>inform and educate</strong> about their historical, political, and scientific context, respecting Islamic teachings about the unknown timing of the Hour.</p>
+    </section>
 
-<section class="disclaimer reveal" role="region" aria-label="Important disclaimer">
-  <h2>Disclaimer & Intent</h2>
-  <p><strong>Important:</strong> The clocks presented on this site (such as the Doomsday Clock and Climate Clock) are symbolic and man-made. They are <strong>not divine prophecies</strong>, nor do they claim to predict the unseen future. They represent human assessments of global risks based on scientific, political, and ideological analyses.</p>
-  <p>This website aims to <strong>inform and educate</strong> visitors on the historical, political, and scientific significance of these clocks — not to promote belief in them as literal predictions.</p>
-</section>
+    <!-- Doomsday Clock Section -->
+    <section id="doomsday" tabindex="0" aria-label="Doomsday Clock Section" class="reveal">
+      <h2>Doomsday Clock</h2>
+      <p>Maintained by the <a href="https://thebulletin.org/doomsday-clock/" target="_blank" rel="noopener noreferrer">Bulletin of the Atomic Scientists</a>, this symbolic clock reflects existential risks like nuclear war, climate change, and disruptive tech. It is updated annually by experts based on current global threats.</p>
+      <img
+        loading="lazy"
+        src="https://thebulletin.org/wp-content/uploads/2024/01/2024-DoomsdayClock_Hero-1536x864.jpg"
+        alt="Doomsday Clock 2024"
+        style="width: 100%; border-radius: 10px; margin: 2rem 0;"
+      />
+      <div class="clock-display" id="doomsday-time" aria-live="polite" aria-atomic="true" aria-label="Doomsday clock symbolic countdown">--:--</div>
+    </section>
 
-<!-- Doomsday Clock Section -->
-<section id="doomsday" class="reveal" role="region" aria-label="Doomsday Clock Section">
-  <h2>Doomsday Clock</h2>
-  <p>Maintained by the <a href="https://thebulletin.org/doomsday-clock/" target="_blank" rel="noopener noreferrer">Bulletin of the Atomic Scientists</a>, this symbolic clock reflects existential risks such as nuclear war, climate change, and disruptive technologies. Updated annually by experts, it is a human-made symbol — not prophecy.</p>
-  <img
-    loading="lazy"
-    src="https://thebulletin.org/wp-content/uploads/2024/01/2024-DoomsdayClock_Hero-1536x864.jpg"
-    alt="Doomsday Clock 2024"
-    style="width: 100%; border-radius: 10px; margin: 2rem 0;"
-  />
-  <div class="clock-display" id="doomsday-time" aria-live="polite" aria-atomic="true" aria-label="Doomsday clock symbolic countdown">--:--</div>
-</section>
+    <!-- Climate Clock Section -->
+    <section id="climate" tabindex="0" aria-label="Climate Clock Section" class="reveal">
+      <h2>Climate Clock</h2>
+      <p>This real-time countdown is sourced from <a href="https://climateclock.world/" target="_blank" rel="noopener noreferrer">climateclock.world</a>, tracking time remaining to limit global warming to 1.5°C based on current trends.</p>
+      <iframe
+        loading="lazy"
+        src="https://climateclock.world/widget/"
+        title="Climate Clock Widget"
+        width="100%"
+        height="350"
+        style="border: none; border-radius: 14px; margin-top: 1.5rem; box-shadow: 0 0 12px #fa1e0eaa;"
+        aria-label="Climate clock real-time countdown"
+      ></iframe>
+    </section>
 
-<!-- Climate Clock Section -->
-<section id="climate" class="reveal" role="region" aria-label="Climate Clock Section">
-  <h2>Climate Clock</h2>
-  <p>This real-time countdown is sourced from <a href="https://climateclock.world/" target="_blank" rel="noopener noreferrer">climateclock.world</a>. It tracks the estimated time remaining to limit global warming to 1.5°C under current emissions trends.</p>
-  <iframe
-    loading="lazy"
-    src="https://climateclock.world/widget/"
-    title="Climate Clock Widget"
-    width="100%"
-    height="350"
-    style="border: none; border-radius: 12px; margin-top: 1rem;"
-    aria-label="Climate clock real-time countdown"
-  ></iframe>
-</section>
+    <!-- AI Singularity Clock Section -->
+    <section id="ai" tabindex="0" aria-label="AI Singularity Clock Section" class="reveal">
+      <h2>AI Singularity Clock</h2>
+      <p>This symbolic clock estimates the progression toward human-level artificial intelligence. It is speculative, reflecting current AI research and development trends.</p>
+      <div class="digital-clock clock-display" id="ai-time" aria-live="polite" aria-atomic="true" aria-label="AI Singularity symbolic countdown">
+        <div class="digit" aria-hidden="true">0</div>
+        <div class="digit" aria-hidden="true">0</div>
+        <div class="colon" aria-hidden="true">:</div>
+        <div class="digit" aria-hidden="true">0</div>
+        <div class="digit" aria-hidden="true">0</div>
+      </div>
+    </section>
 
-<!-- AI Singularity Clock Section -->
-<section id="ai" class="reveal" role="region" aria-label="AI Singularity Clock Section" tabindex="0">
-  <h2>AI Singularity Clock</h2>
-  <p>This symbolic clock estimates the progression toward human-level artificial intelligence. It is speculative and based on current AI research trends.</p>
-  <div class="clock-display digital-clock" id="ai-time" aria-live="polite" aria-atomic="true" aria-label="AI singularity symbolic countdown"></div>
-</section>
+    <!-- Islamic Perspective Section -->
+    <section id="islamic-view" tabindex="0" aria-label="Islamic Perspective Section" class="reveal">
+      <h2>Islamic Perspective on Predicting the Future</h2>
+      <p>In Islam, <strong>only Allah knows the exact time of the Hour</strong> (Day of Judgment). Human predictions about the end of the world are speculative and not rooted in divine revelation.</p>
+      <ul>
+        <li><strong>Qur’an 31:34:</strong> "Indeed, Allah [alone] has knowledge of the Hour."</li>
+        <li><strong>Qur’an 7:187:</strong> "They ask you about the Hour—when will it come? Say: Its knowledge is only with my Lord."</li>
+        <li><strong>Qur’an 33:63:</strong> "People ask you concerning the Hour. Say: Knowledge of it is only with Allah."</li>
+      </ul>
+      <p>This site respects Islamic teachings and does not promote apocalyptic fear but aims to inform about human-made clocks and metaphors of existential risk.</p>
+    </section>
 
-<!-- Islamic Perspective Section -->
-<section id="islamic-view" class="reveal" role="region" aria-label="Islamic Perspective on Predicting the Future">
-  <h2>Islamic Perspective on Predicting the Future</h2>
-  <p>According to Islamic belief, <strong>only Allah knows the exact time of the Hour</strong> (the Day of Judgment). Human attempts to predict the end of the world are speculative and not rooted in divine revelation.</p>
-  <ul>
-    <li><strong>Qur’an 31:34</strong>: "Indeed, Allah [alone] has knowledge of the Hour."</li>
-    <li><strong>Qur’an 7:187</strong>: "They ask you about the Hour—when will it come? Say: Its knowledge is only with my Lord."</li>
-    <li><strong>Qur’an 33:63</strong>: "People ask you concerning the Hour. Say: Knowledge of it is only with Allah."</li>
-  </ul>
-  <p>This website does not promote apocalyptic fear but offers insights into modern human concerns and metaphors.</p>
-</section>
-
-<!-- JavaScript Sample Section -->
-<section class="reveal" role="region" aria-label="JavaScript Countdown Demo">
-  <h2>JavaScript Sample (Countdown Function)</h2>
-  <p>This demo snippet shows a symbolic countdown using JavaScript:</p>
-  <pre><code class="language-javascript">
-function countdown(start) {
+    <!-- Code Snippet Section -->
+    <section id="code-snippet" tabindex="0" aria-label="JavaScript Sample Section" class="reveal">
+      <h2>JavaScript Sample (Symbolic Countdown Function)</h2>
+      <p>This demo snippet shows a symbolic countdown implemented in JavaScript.</p>
+      <pre><code class="language-javascript">function countdown(start) {
   let seconds = start;
   setInterval(() => {
     const m = String(Math.floor(seconds / 60)).padStart(2, '0');
@@ -358,287 +424,203 @@ function countdown(start) {
     console.log(`${m}:${s}`);
     seconds--;
   }, 1000);
-}
-  </code></pre>
-</section>
+}</code></pre>
+    </section>
+  </main>
 
-<!-- Back To Top Button -->
-<button id="backToTopBtn" aria-label="Back to top" title="Back to top" type="button" tabindex="0">&#8679;</button>
+  <button id="backToTopBtn" aria-label="Back to top" title="Back to top">↑</button>
 
-<!-- Additional Information & References Section -->
-<section aria-label="Further information and references" class="reveal" style="margin-top: 6rem;">
-  <h2>Additional Information & References</h2>
+  <footer role="contentinfo">
+    <p>&copy; 2025 Hallway of Doom • Created for informational and educational purposes.</p>
+  </footer>
 
-  <h3>Doomsday Clock</h3>
-  <p>The Doomsday Clock was created in 1947 by the Bulletin of the Atomic Scientists to convey threats posed by nuclear weapons. Today, it also accounts for climate change and disruptive technologies.</p>
-  <ul>
-    <li><a href="https://thebulletin.org/doomsday-clock/" target="_blank" rel="noopener noreferrer">Official Bulletin Doomsday Clock page</a></li>
-    <li><a href="https://en.wikipedia.org/wiki/Doomsday_Clock" target="_blank" rel="noopener noreferrer">Wikipedia: Doomsday Clock</a></li>
-  </ul>
+  <script>
+    /* -----------------------------------------
+    GSAP Scroll-trigger animations to fade in sections
+    ----------------------------------------- */
+    gsap.registerPlugin(ScrollTrigger);
 
-  <h3>Climate Clock</h3>
-  <p>The Climate Clock highlights the limited time humanity has to reduce carbon emissions and keep global warming below 1.5°C. It is based on scientific models and updated in near real-time.</p>
-  <ul>
-    <li><a href="https://climateclock.world/" target="_blank" rel="noopener noreferrer">Climate Clock official site</a></li>
-    <li><a href="https://en.wikipedia.org/wiki/Climate_Clock" target="_blank" rel="noopener noreferrer">Wikipedia: Climate Clock</a></li>
-  </ul>
-
-  <h3>AI Singularity Clock</h3>
-  <p>The AI Singularity Clock is a speculative, symbolic clock reflecting when artificial intelligence may reach or surpass human intelligence, sparking profound changes.</p>
-  <ul>
-    <li><a href="https://en.wikipedia.org/wiki/Technological_singularity" target="_blank" rel="noopener noreferrer">Wikipedia: Technological Singularity</a></li>
-    <li><a href="https://futureoflife.org/ai-timeline/" target="_blank" rel="noopener noreferrer">Future of Life Institute: AI timeline</a></li>
-  </ul>
-
-  <h3>Islamic Perspective</h3>
-  <p>This website respects Islamic teachings emphasizing that only Allah knows the timing of the Hour. Humans are encouraged to avoid speculation and focus on righteous living.</p>
-  <ul>
-    <li><a href="https://quran.com/31/34" target="_blank" rel="noopener noreferrer">Qur’an 31:34</a></li>
-    <li><a href="https://quran.com/7/187" target="_blank" rel="noopener noreferrer">Qur’an 7:187</a></li>
-    <li><a href="https://quran.com/33/63" target="_blank" rel="noopener noreferrer">Qur’an 33:63</a></li>
-  </ul>
-
-  <p style="margin-top: 3rem; font-size: 0.9rem; color: var(--text-muted);">Last updated: 2025 &nbsp;|&nbsp; Created for educational and informational purposes with respect to Islamic principles and scientific discourse.</p>
-</section>
-
-<footer role="contentinfo" aria-label="Site footer">
-  <p>&copy; 2025 Hallway of Doom Clocks • No claims of prophecy or certainty • Respectful of religious teachings and scientific knowledge</p>
-</footer>
-
-<script>
-  'use strict';
-
-  // ====== BACK TO TOP BUTTON ======
-  const backToTopBtn = document.getElementById('backToTopBtn');
-  window.addEventListener('scroll', () => {
-    if (window.scrollY > 400) backToTopBtn.classList.add('show');
-    else backToTopBtn.classList.remove('show');
-  });
-  backToTopBtn.addEventListener('click', () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    backToTopBtn.blur();
-  });
-  // Keyboard shortcut: T to toggle back to top button focus
-  window.addEventListener('keydown', (e) => {
-    if (e.key === 'T' || e.key === 't') {
-      if (document.activeElement !== backToTopBtn) {
-        e.preventDefault();
-        backToTopBtn.focus();
-      }
-    }
-  });
-
-  // ====== GSAP ScrollReveal ======
-  window.addEventListener('load', () => {
-    gsap.utils.toArray('.reveal').forEach(section => {
-      gsap.fromTo(section, {
-        opacity: 0,
-        y: 60
-      }, {
-        opacity: 1,
-        y: 0,
-        duration: 1,
-        ease: "power3.out",
-        scrollTrigger: {
-          trigger: section,
-          start: "top 80%",
-          toggleActions: "play none none reverse",
-          once: true,
+    gsap.utils.toArray('section.reveal').forEach(section => {
+      gsap.fromTo(section, 
+        { opacity: 0, y: 60 }, 
+        { 
+          opacity: 1, 
+          y: 0, 
+          duration: 1.2, 
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: section,
+            start: "top 80%",
+            end: "bottom 20%",
+            toggleActions: "play none none reverse"
+          }
         }
-      });
-    });
-  });
-
-  // ====== DIGITAL CLOCKS LOGIC ======
-
-  // Utility: format number as 2-digit string
-  function pad2(num) {
-    return String(num).padStart(2, '0');
-  }
-
-  // --- Doomsday Clock symbolic countdown ---
-  function startDoomsdayClock() {
-    const el = document.getElementById('doomsday-time');
-    // Symbolic start: 23:40 (minutes:seconds)
-    let minutes = 23;
-    let seconds = 40;
-    function tick() {
-      el.textContent = `${pad2(minutes)}:${pad2(seconds)}`;
-      seconds--;
-      if (seconds < 0) {
-        seconds = 59;
-        minutes--;
-        if (minutes < 0) minutes = 23;
-      }
-      setTimeout(tick, 1000);
-    }
-    tick();
-  }
-
-  // --- AI Singularity Clock animated digits ---
-  function startAiClock() {
-    const el = document.getElementById('ai-time');
-
-    // We'll show HH:MM digital rolling clock counting down from 15:00
-    let totalSeconds = 15 * 60;
-
-    // Create digit elements for HH:MM format
-    const format = ['H1', 'H2', 'colon', 'M1', 'M2'];
-    const digits = {};
-    format.forEach(id => {
-      const div = document.createElement('div');
-      div.classList.add(id === 'colon' ? 'colon' : 'digit');
-      div.textContent = id === 'colon' ? ':' : '0';
-      el.appendChild(div);
-      digits[id] = div;
+      );
     });
 
-    function updateDigits(sec) {
-      let m = Math.floor(sec / 60);
-      let s = sec % 60;
-      let h1 = Math.floor(m / 10);
-      let h2 = m % 10;
-      let m1 = Math.floor(s / 10);
-      let m2 = s % 10;
+    /* -----------------------------------------
+    Back to Top Button Logic
+    ----------------------------------------- */
+    const backToTopBtn = document.getElementById('backToTopBtn');
+    window.addEventListener('scroll', () => {
+      if(window.scrollY > 400){
+        backToTopBtn.classList.add('show');
+      } else {
+        backToTopBtn.classList.remove('show');
+      }
+    });
+    backToTopBtn.addEventListener('click', () => {
+      window.scrollTo({top:0, behavior:'smooth'});
+    });
 
-      // Animate digit change if changed
-      function animateDigit(div, newVal) {
-        if (div.textContent !== String(newVal)) {
-          div.classList.add('digit-rolling');
-          setTimeout(() => div.classList.remove('digit-rolling'), 400);
-          div.textContent = newVal;
-        }
+    /* -----------------------------------------
+    Symbolic Doomsday and AI Clocks
+    ----------------------------------------- */
+    function startSymbolicClock(id, startSeconds) {
+      const el = document.getElementById(id);
+      let seconds = startSeconds;
+
+      function pad(n) {
+        return n.toString().padStart(2, '0');
       }
 
-      animateDigit(digits.H1, h1);
-      animateDigit(digits.H2, h2);
-      animateDigit(digits.M1, m1);
-      animateDigit(digits.M2, m2);
+      function updateClock() {
+        if(!el) return;
+        const m = Math.floor(seconds / 60);
+        const s = seconds % 60;
+
+        if(id === 'ai-time') {
+          // Animate individual digit changes with roll effect
+          const digits = el.querySelectorAll('.digit');
+          let timeStr = pad(m) + pad(s);
+          for(let i=0; i < digits.length; i++){
+            if(digits[i].textContent !== timeStr[i]){
+              digits[i].textContent = timeStr[i];
+              digits[i].classList.add('digit-rolling');
+              setTimeout(() => digits[i].classList.remove('digit-rolling'), 400);
+            }
+          }
+        } else {
+          el.textContent = `${pad(m)}:${pad(s)}`;
+        }
+
+        seconds = (seconds - 1 + 3600) % 3600;
+        setTimeout(updateClock, 1000);
+      }
+      updateClock();
     }
+    window.addEventListener('load', () => {
+      startSymbolicClock('doomsday-time', 2877); // example 47:57 minutes
+      startSymbolicClock('ai-time', 3300);       // example 55:00 minutes
+    });
 
-    function tick() {
-      updateDigits(totalSeconds);
-      totalSeconds--;
-      if (totalSeconds < 0) totalSeconds = 15 * 60; // loop for demo
-      setTimeout(tick, 1000);
-    }
-    tick();
-  }
+    /* -----------------------------------------
+    Three.js 3D Hallway Setup
+    ----------------------------------------- */
+    (() => {
+      const container = document.getElementById('hallway-container');
+      const scene = new THREE.Scene();
 
-  // Initialize clocks on page load
-  window.addEventListener('load', () => {
-    startDoomsdayClock();
-    startAiClock();
-  });
+      // Camera setup
+      const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
+      camera.position.set(0, 2.5, 5);
 
-  // ====== THREE.JS 3D HALLWAY BACKGROUND ======
-
-  // Setup scene, camera, renderer
-  window.addEventListener('load', () => {
-    const container = document.getElementById('hallway-container');
-
-    const scene = new THREE.Scene();
-
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 1.7, 5);
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setClearColor(0x0b0b0b, 0);
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    container.appendChild(renderer.domElement);
-
-    // Resize handler
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
+      // Renderer
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
       renderer.setSize(window.innerWidth, window.innerHeight);
-    });
+      renderer.setClearColor(0x0b0b0b, 1);
+      container.appendChild(renderer.domElement);
 
-    // Create hallway walls (3 planes)
-    const wallGeometry = new THREE.PlaneGeometry(10, 5);
+      // Resize handler
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth/window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
 
-    const wallMaterialSide = new THREE.MeshBasicMaterial({ color: 0x101010, side: THREE.DoubleSide, opacity: 0.8, transparent: true });
-    const wallMaterialBack = new THREE.MeshBasicMaterial({ color: 0x141414, side: THREE.DoubleSide, opacity: 0.9, transparent: true });
+      // Hallway Floor & Ceiling
+      const floorGeometry = new THREE.PlaneGeometry(20, 30);
+      const floorMaterial = new THREE.MeshStandardMaterial({color: 0x111111, roughness: 0.8, metalness: 0.2});
+      const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+      floor.rotation.x = -Math.PI / 2;
+      floor.position.y = 0;
+      floor.position.z = -5;
+      scene.add(floor);
+      const ceiling = new THREE.Mesh(floorGeometry, floorMaterial);
+      ceiling.rotation.x = Math.PI / 2;
+      ceiling.position.y = 5;
+      ceiling.position.z = -5;
+      scene.add(ceiling);
 
-    const leftWall = new THREE.Mesh(wallGeometry, wallMaterialSide);
-    leftWall.position.set(-5, 2.5, -5);
-    leftWall.rotation.y = Math.PI / 2;
-    scene.add(leftWall);
+      // Walls - subtle vertical stripes texture simulated by stripes
+      const wallGeometry = new THREE.PlaneGeometry(20, 30);
+      const wallMaterial = new THREE.MeshStandardMaterial({color: 0x111111, roughness: 0.95, metalness: 0});
+      const leftWall = new THREE.Mesh(wallGeometry, wallMaterial);
+      leftWall.position.set(-10, 2.5, -5);
+      leftWall.rotation.y = Math.PI / 2;
+      scene.add(leftWall);
+      const rightWall = new THREE.Mesh(wallGeometry, wallMaterial);
+      rightWall.position.set(10, 2.5, -5);
+      rightWall.rotation.y = -Math.PI / 2;
+      scene.add(rightWall);
 
-    const rightWall = new THREE.Mesh(wallGeometry, wallMaterialSide);
-    rightWall.position.set(5, 2.5, -5);
-    rightWall.rotation.y = -Math.PI / 2;
-    scene.add(rightWall);
+      // Ambient lighting
+      const ambientLight = new THREE.AmbientLight(0x404040, 1.4);
+      scene.add(ambientLight);
 
-    const backWall = new THREE.Mesh(wallGeometry, wallMaterialBack);
-    backWall.position.set(0, 2.5, -10);
-    scene.add(backWall);
+      // Directional light to simulate hallway glow
+      const directionalLight = new THREE.DirectionalLight(0xfa1e0e, 0.8);
+      directionalLight.position.set(5, 10, 7);
+      scene.add(directionalLight);
 
-    // Floor and ceiling
-    const floorGeometry = new THREE.PlaneGeometry(10, 10);
-    const floorMaterial = new THREE.MeshBasicMaterial({ color: 0x080808, opacity: 0.85, transparent: true });
-    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-    floor.rotation.x = -Math.PI / 2;
-    floor.position.y = 0;
-    floor.position.z = -5;
-    scene.add(floor);
+      // Glowing clocks as boxes along left wall
+      const clockGeometry = new THREE.BoxGeometry(1.6, 1.6, 0.2);
+      const clockMaterial = new THREE.MeshBasicMaterial({
+        color: 0x2af598,
+        emissive: 0x2af598,
+        emissiveIntensity: 0.8,
+        transparent: true,
+        opacity: 0.85,
+      });
+      const clocks = [];
+      const clockPositions = [
+        { x: -8.5, y: 3, z: -2 },
+        { x: -8.5, y: 3, z: -5 },
+        { x: -8.5, y: 3, z: -8 }
+      ];
+      clockPositions.forEach(pos => {
+        const clockMesh = new THREE.Mesh(clockGeometry, clockMaterial);
+        clockMesh.position.set(pos.x, pos.y, pos.z);
+        clocks.push(clockMesh);
+        scene.add(clockMesh);
+        // Add subtle point light near each clock
+        const light = new THREE.PointLight(0x2af598, 0.8, 4);
+        light.position.copy(clockMesh.position);
+        scene.add(light);
+      });
 
-    const ceiling = new THREE.Mesh(floorGeometry, floorMaterial);
-    ceiling.rotation.x = Math.PI / 2;
-    ceiling.position.y = 5;
-    ceiling.position.z = -5;
-    scene.add(ceiling);
+      // Animate camera moving down hallway loop
+      let camZ = 5;
+      const camMinZ = -12;
+      const camMaxZ = 5;
+      const camSpeed = 0.025;
+      let camDirection = -1;
 
-    // Clocks as glowing boxes along hallway on left side
-    const clockGeometry = new THREE.BoxGeometry(1, 1, 0.1);
-    const clockMaterial = new THREE.MeshBasicMaterial({
-      color: 0x2af598,
-      emissive: 0x2af598,
-      emissiveIntensity: 1,
-      transparent: true,
-      opacity: 0.7,
-    });
+      function animate() {
+        requestAnimationFrame(animate);
 
-    const clocks = [];
-    const clockPositions = [
-      { x: -3, y: 2.5, z: -2 },
-      { x: -3, y: 2.5, z: -5 },
-      { x: -3, y: 2.5, z: -8 },
-    ];
+        camZ += camSpeed * camDirection;
+        if(camZ < camMinZ) camZ = camMaxZ;
+        camera.position.z = camZ;
 
-    clockPositions.forEach(pos => {
-      const clockMesh = new THREE.Mesh(clockGeometry, clockMaterial);
-      clockMesh.position.set(pos.x, pos.y, pos.z);
-      clocks.push(clockMesh);
-      scene.add(clockMesh);
-    });
+        // Slight side sway for natural feel
+        camera.position.x = Math.sin(camZ * 0.5) * 0.4;
+        camera.lookAt(0, 2.5, camZ - 5);
 
-    // Ambient glow lights near clocks
-    clocks.forEach(clock => {
-      const light = new THREE.PointLight(0x2af598, 1, 3);
-      light.position.copy(clock.position);
-      scene.add(light);
-    });
-
-    // Animate camera slowly moving down the hallway loop
-    let camZ = 5;
-    let direction = -0.02;
-
-    function animate() {
-      requestAnimationFrame(animate);
-      camZ += direction;
-      if (camZ < -12) camZ = 5;
-      camera.position.z = camZ;
-
-      // Slight side sway to simulate walking corridor
-      camera.position.x = Math.sin(camZ * 0.5) * 0.3;
-      camera.lookAt(0, 2.5, camZ - 5);
-
-      renderer.render(scene, camera);
-    }
-    animate();
-  });
-</script>
-
+        renderer.render(scene, camera);
+      }
+      animate();
+    })();
+  </script>
 </body>
 </html>
