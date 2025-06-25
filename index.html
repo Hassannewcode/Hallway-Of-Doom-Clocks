@@ -3,40 +3,40 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Hallway of Doom Clocks — immersive countdown journey through existential threats." />
   <title>Hallway of Doom Clocks</title>
+  <meta name="description" content="Immersive countdown journey through existential threats." />
+  
+  <!-- Fonts (Self-host or replace URLs) -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@700&family=Neue+Montreal&display=swap"
+    rel="stylesheet"
+  />
 
-  <!-- Fonts preload -->
-  <link rel="preload" href="https://cdn.jsdelivr.net/gh/username/fonts/NeueMontreal-Regular.woff2" as="font" crossorigin />
-  <link rel="preload" href="https://cdn.jsdelivr.net/gh/username/fonts/Digital-7.woff2" as="font" crossorigin />
+  <!-- GSAP, ScrollTrigger & Flip (CDN) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Flip.min.js" defer></script>
 
-  <!-- Styles -->
+  <!-- Three.js & Postprocessing -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.153.0/examples/js/postprocessing/EffectComposer.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.153.0/examples/js/postprocessing/RenderPass.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.153.0/examples/js/postprocessing/GlitchPass.js" defer></script>
+
   <style>
-    :root {
-      --bg: #0a0a0a;
-      --text: #f5f5f5;
-      --accent: #fa1e0e;
-      --led-dark: #111;
-      --led-light: #50ff75;
-      --transition-fast: 0.3s ease-out;
-    }
-    /* Global Reset & Base */
-    *, *::before, *::after {
+    /* Reset & Base */
+    * {
       margin: 0; padding: 0; box-sizing: border-box;
     }
     html {
       scroll-behavior: smooth;
-      background-color: var(--bg);
-      color: var(--text);
-      font-family: 'Neue Montreal', sans-serif;
       font-size: 16px;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
+      background: #0a0a0a;
+      color: #f5f5f5;
+      font-family: 'Neue Montreal', 'Roboto Mono', monospace, sans-serif;
     }
     body {
       overflow-x: hidden;
-      background-color: var(--bg);
-      color: var(--text);
       position: relative;
       min-height: 100vh;
     }
@@ -44,32 +44,38 @@
     /* Preloader */
     #preloader {
       position: fixed;
-      top:0; left:0;
-      width: 100vw;
-      height: 100vh;
-      background: var(--bg);
+      inset: 0;
+      background: #0a0a0a;
       display: flex;
       justify-content: center;
       align-items: center;
       z-index: 9999;
+      transition: opacity 0.6s ease;
+    }
+    #preloader.hidden {
+      opacity: 0;
+      pointer-events: none;
     }
     #preloader .spinner {
-      width: 60px; height: 60px;
-      border: 6px solid var(--led-dark);
-      border-top-color: var(--accent);
+      width: 60px;
+      height: 60px;
+      border: 6px solid #111;
+      border-top-color: #fa1e0e;
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
 
-    /* Custom Cursor */
+    /* Cursor */
     .cursor {
       position: fixed;
       top: 0; left: 0;
       width: 24px; height: 24px;
-      border: 2px solid var(--accent);
+      border: 2px solid #fa1e0e;
       border-radius: 50%;
       pointer-events: none;
       transform: translate(-50%, -50%);
@@ -82,217 +88,6 @@
       background: rgba(250, 30, 14, 0.2);
     }
 
-    /* Intro Section */
-    .intro {
-      position: relative;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      overflow: hidden;
-      padding: 2rem 1rem;
-      background: var(--bg);
-      color: var(--text);
-      user-select: none;
-    }
-    .intro video.bg-video {
-      position: absolute;
-      top:0; left:0;
-      width: 100%; height: 100%;
-      object-fit: cover;
-      z-index: -1;
-      filter: brightness(0.3);
-    }
-    .intro-content {
-      max-width: 700px;
-      z-index: 10;
-    }
-    .intro-content .title {
-      font-size: 3.5rem;
-      font-weight: 900;
-      line-height: 1.1;
-      letter-spacing: 0.02em;
-      margin-bottom: 0.5rem;
-      user-select: text;
-    }
-    .intro-content .subtitle {
-      font-size: 1.25rem;
-      margin-bottom: 1.5rem;
-      font-weight: 500;
-      opacity: 0.85;
-      user-select: text;
-    }
-    .btn-primary {
-      display: inline-block;
-      padding: 0.8rem 2rem;
-      background: var(--accent);
-      color: #fff;
-      font-weight: 600;
-      border-radius: 5px;
-      text-decoration: none;
-      transition: background var(--transition-fast);
-      user-select: none;
-    }
-    .btn-primary:hover,
-    .btn-primary:focus {
-      background: #e2170b;
-      outline: none;
-    }
-
-    /* Clock Sections */
-    section.clock-section {
-      position: relative;
-      padding: 6rem 1rem 8rem;
-      background: linear-gradient(180deg, #080808 0%, #0f0f0f 100%);
-      text-align: center;
-      user-select: none;
-    }
-    section.clock-section h2 {
-      font-size: 2.5rem;
-      font-weight: 900;
-      margin-bottom: 0.25rem;
-    }
-    section.clock-section p {
-      font-size: 1.1rem;
-      opacity: 0.8;
-      max-width: 450px;
-      margin: 0 auto 2rem;
-    }
-
-    /* Clock Display */
-    .clock-wrap {
-      display: flex;
-      justify-content: center;
-      margin: 2rem 0;
-    }
-    .clock-visual {
-      position: relative;
-      width: 320px;
-      height: 140px;
-      background: var(--led-dark);
-      border-radius: 10px;
-      box-shadow: inset 0 0 30px #000;
-      font-family: 'Digital-7', monospace;
-      font-size: 4rem;
-      color: var(--led-light);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      user-select: none;
-      transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-      cursor: default;
-    }
-    .clock-visual::before {
-      content: "";
-      position: absolute;
-      top: 12px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 280px;
-      height: 12px;
-      background: rgba(255, 255, 255, 0.07);
-      border-radius: 6px;
-      animation: pulse 2.5s ease-in-out infinite;
-      pointer-events: none;
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 0.05; }
-      50% { opacity: 0.25; }
-    }
-    section.clock-section:hover .clock-visual {
-      transform: scale(1.05);
-      box-shadow: 0 0 40px var(--led-light);
-    }
-
-    /* Testimonials */
-    section.testimonials {
-      background: #111;
-      color: var(--text);
-      padding: 6rem 1rem 8rem;
-      user-select: none;
-      text-align: center;
-    }
-    #testimonial-slider {
-      display: grid;
-      grid-auto-flow: column;
-      overflow-x: auto;
-      gap: 2rem;
-      padding: 2rem 0;
-      scroll-snap-type: x mandatory;
-      max-width: 90vw;
-      margin: 0 auto;
-    }
-    .slide {
-      scroll-snap-align: center;
-      min-width: 80vw;
-      max-width: 600px;
-      background: #222;
-      border-radius: 12px;
-      padding: 2rem;
-      box-shadow: 0 0 15px rgba(0,0,0,0.8);
-      user-select: text;
-    }
-    blockquote {
-      font-style: italic;
-      font-size: 1.2rem;
-      line-height: 1.5;
-      margin-bottom: 1rem;
-    }
-    cite {
-      display: block;
-      font-size: 0.9rem;
-      opacity: 0.7;
-      text-align: right;
-      font-weight: 600;
-    }
-
-    /* Finale Section */
-    section.finale {
-      padding: 12rem 1rem 12rem;
-      background: #000;
-      text-align: center;
-      user-select: none;
-    }
-    section.finale h2 {
-      font-size: 3rem;
-      font-weight: 900;
-      margin-bottom: 1rem;
-    }
-    section.finale p {
-      font-size: 1.2rem;
-      opacity: 0.8;
-      max-width: 480px;
-      margin: 0 auto;
-    }
-
-    /* Footer */
-    footer {
-      background: #050505;
-      padding: 3rem 1rem;
-      text-align: center;
-      user-select: none;
-      color: var(--text);
-      font-size: 0.9rem;
-      font-weight: 400;
-    }
-    footer nav {
-      margin-top: 1rem;
-    }
-    footer nav a {
-      color: var(--text);
-      opacity: 0.7;
-      margin: 0 0.9rem;
-      text-decoration: none;
-      transition: opacity var(--transition-fast);
-    }
-    footer nav a:hover,
-    footer nav a:focus {
-      opacity: 1;
-      outline: none;
-    }
-
     /* Cookie Banner */
     #cookie-banner {
       position: fixed;
@@ -300,124 +95,356 @@
       left: 50%;
       transform: translateX(-50%);
       background: #222;
-      color: var(--text);
       padding: 1rem 1.5rem;
-      border-radius: 8px;
+      border-radius: 6px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      color: #f5f5f5;
       display: flex;
       align-items: center;
       gap: 1rem;
+      font-size: 0.9rem;
       z-index: 1200;
-      max-width: 90vw;
-      font-size: 0.95rem;
-      font-weight: 500;
     }
     #cookie-banner a {
-      color: var(--accent);
+      color: #fa1e0e;
       text-decoration: underline;
     }
     #cookie-banner button {
-      padding: 0.5rem 1rem;
-      background: var(--accent);
+      background: #fa1e0e;
       border: none;
-      color: #fff;
-      border-radius: 6px;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
       cursor: pointer;
       font-weight: 700;
       transition: background 0.3s ease;
     }
-    #cookie-banner button:hover,
-    #cookie-banner button:focus {
-      background: #e2170b;
+    #cookie-banner button:hover {
+      background: #d61500;
+    }
+
+    /* Intro Section */
+    .intro {
+      position: relative;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 0 1rem;
+      overflow: hidden;
+      z-index: 1;
+    }
+    .bg-video {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: brightness(0.3);
+      z-index: -1;
+    }
+    .intro .title {
+      font-size: 3.5rem;
+      font-weight: 900;
+      letter-spacing: 0.15em;
+      margin-bottom: 0.3rem;
+      text-transform: uppercase;
+      color: #fa1e0e;
+      user-select: none;
+    }
+    .intro .subtitle {
+      font-size: 1.3rem;
+      font-weight: 400;
+      margin-bottom: 1.5rem;
+      max-width: 520px;
+      color: #ddd;
+      user-select: none;
+    }
+    .btn-primary {
+      background: #fa1e0e;
+      color: white;
+      text-decoration: none;
+      padding: 0.8rem 2rem;
+      border-radius: 5px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      transition: background 0.3s ease;
+      box-shadow: 0 0 12px #fa1e0eaa;
+      user-select: none;
+    }
+    .btn-primary:hover,
+    .btn-primary:focus {
+      background: #d61500;
+      box-shadow: 0 0 20px #d61500cc;
+      outline: none;
+    }
+
+    /* Sections */
+    section {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 6rem 1rem;
+      text-align: center;
+      position: relative;
+      z-index: 10;
+    }
+
+    section.clock-section {
+      background: linear-gradient(180deg, #080808, #0f0f0f);
+      border-radius: 12px;
+      margin-bottom: 4rem;
+      box-shadow: 0 0 40px #fa1e0e33;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: default;
+      user-select: none;
+    }
+    section.clock-section:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 60px #fa1e0e99;
+    }
+
+    /* Clock Visual */
+    .clock-wrap {
+      margin-top: 2rem;
+      display: flex;
+      justify-content: center;
+    }
+    .clock-visual {
+      width: 280px;
+      height: 120px;
+      background: #111;
+      border-radius: 10px;
+      box-shadow: inset 0 0 20px #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Roboto Mono', monospace;
+      font-weight: 700;
+      font-size: 3.6rem;
+      color: #50ff75;
+      letter-spacing: 0.15em;
+      position: relative;
+      user-select: none;
+    }
+    .clock-visual::before {
+      content: "";
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 250px;
+      height: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 5px;
+      animation: pulse 2.5s ease-in-out infinite;
+      pointer-events: none;
+      user-select: none;
+    }
+    @keyframes pulse {
+      0%, 100% {opacity: 0.05;}
+      50% {opacity: 0.2;}
+    }
+
+    /* Testimonials */
+    .testimonials {
+      background: #111;
+      padding: 4rem 1rem;
+      border-radius: 12px;
+      box-shadow: 0 0 50px #fa1e0e33;
+      margin-bottom: 4rem;
+    }
+    .testimonials h2 {
+      margin-bottom: 2rem;
+      font-weight: 800;
+      font-size: 2.6rem;
+      color: #fa1e0e;
+      user-select: none;
+    }
+    #testimonial-slider {
+      display: grid;
+      grid-auto-flow: column;
+      overflow-x: auto;
+      gap: 2rem;
+      scroll-snap-type: x mandatory;
+      padding-bottom: 1rem;
+      -webkit-overflow-scrolling: touch;
+    }
+    .slide {
+      scroll-snap-align: center;
+      min-width: 80%;
+      background: #222;
+      border-radius: 8px;
+      padding: 2rem 1.5rem;
+      box-shadow: 0 0 25px #fa1e0e88;
+      user-select: none;
+    }
+    blockquote {
+      font-style: italic;
+      font-size: 1.1rem;
+      color: #ccc;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    cite {
+      display: block;
+      margin-top: 1.2rem;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #fa1e0eaa;
+      user-select: none;
+    }
+
+    /* Finale */
+    .finale {
+      padding: 8rem 1rem;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #fa1e0e;
+      user-select: none;
+    }
+
+    /* Footer */
+    footer {
+      background: #050505;
+      padding: 2rem 1rem;
+      text-align: center;
+      user-select: none;
+      font-size: 0.9rem;
+      color: #999;
+    }
+    footer nav a {
+      color: #999;
+      margin: 0 0.8rem;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+    footer nav a:hover,
+    footer nav a:focus {
+      color: #fa1e0e;
       outline: none;
     }
 
     /* Responsive */
     @media (max-width: 768px) {
       .clock-visual {
-        width: 260px;
-        height: 110px;
-        font-size: 3rem;
+        width: 240px;
+        height: 100px;
+        font-size: 2.8rem;
       }
-      .intro-content .title {
-        font-size: 2.5rem;
+      .intro .title {
+        font-size: 2.8rem;
       }
-      section.clock-section h2 {
+      section.clock-section {
+        margin-bottom: 3rem;
+      }
+      .testimonials h2 {
         font-size: 2rem;
-      }
-      section.finale h2 {
-        font-size: 2.5rem;
-      }
-      #testimonial-slider {
-        max-width: 100vw;
-      }
-      .slide {
-        min-width: 90vw;
       }
     }
   </style>
-
-  <!-- Digital font: Digital-7 from cdn (fallback) -->
-  <link href="https://fonts.cdnfonts.com/css/digital-7" rel="stylesheet" />
-
 </head>
 <body>
-  <!-- Cookie Banner -->
-  <div id="cookie-banner" role="dialog" aria-live="polite">
-    <p>We use cookies to enhance your experience. <a href="legal/cookies.html" target="_blank" rel="noopener">Learn more</a>.</p>
-    <button id="accept-cookies">Accept</button>
+  <!-- Preloader -->
+  <div id="preloader" aria-label="Loading content">
+    <div class="spinner" role="progressbar" aria-busy="true"></div>
   </div>
 
-  <!-- Preloader -->
-  <div id="preloader" aria-hidden="true"><div class="spinner"></div></div>
-
-  <!-- Custom Cursor -->
+  <!-- Custom cursor -->
   <div class="cursor" aria-hidden="true"></div>
 
-  <!-- Main scroll container -->
-  <main id="scroll-container" tabindex="-1" role="main">
+  <!-- Cookie Banner -->
+  <div id="cookie-banner" role="dialog" aria-live="polite" aria-label="Cookie consent">
+    <p>We use cookies to enhance your experience. <a href="legal/cookies.html">Learn more</a>.</p>
+    <button id="accept-cookies" aria-label="Accept cookies">Accept</button>
+  </div>
+
+  <main id="scroll-container" tabindex="-1">
     <!-- Intro -->
     <section class="intro" role="banner" aria-label="Introduction to Hallway of Doom Clocks">
-      <video class="bg-video" autoplay muted loop playsinline preload="auto" aria-hidden="true" tabindex="-1">
+      <video
+        class="bg-video"
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="auto"
+        aria-hidden="true"
+      >
         <source src="media/hallway_loop.mp4" type="video/mp4" />
+        Your browser does not support the video tag.
       </video>
-      <div class="intro-content" data-cms-field="intro">
-        <h1 class="title">Hallway of Doom Clocks</h1>
-        <p class="subtitle">Scroll into the pulse of impending catastrophe.</p>
-        <a href="#doomsday" class="btn-primary" id="cta-button">Explore the Risks</a>
-      </div>
+      <h1 class="title">Hallway of Doom Clocks</h1>
+      <p class="subtitle">Scroll into the pulse of impending catastrophe.</p>
+      <a href="#doomsday" class="btn-primary" id="cta-button">Explore the Risks</a>
     </section>
 
     <!-- Clock Sections -->
-    <section class="clock-section" id="doomsday" aria-labelledby="doomsday-heading" data-cms-field="doomsday">
+    <section
+      class="clock-section"
+      id="doomsday"
+      aria-labelledby="doomsday-heading"
+      data-cms-field="doomsday"
+      tabindex="0"
+    >
       <h2 id="doomsday-heading">Doomsday Clock</h2>
       <p>The symbolic ticking of existential risk.</p>
-      <div class="clock-wrap"><div class="clock-visual"><div class="display" aria-live="polite" aria-atomic="true"></div></div></div>
+      <div class="clock-wrap" aria-live="polite" aria-atomic="true" aria-relevant="text">
+        <div class="clock-visual" role="timer" aria-live="off" aria-label="Doomsday clock countdown">
+          <div class="display">00:00</div>
+        </div>
+      </div>
     </section>
 
-    <section class="clock-section" id="singularity" aria-labelledby="singularity-heading" data-cms-field="singularity">
+    <section
+      class="clock-section"
+      id="singularity"
+      aria-labelledby="singularity-heading"
+      data-cms-field="singularity"
+      tabindex="0"
+    >
       <h2 id="singularity-heading">AI Singularity Clock</h2>
       <p>Countdown to human-level AI—and beyond.</p>
-      <div class="clock-wrap"><div class="clock-visual"><div class="display" aria-live="polite" aria-atomic="true"></div></div></div>
+      <div class="clock-wrap" aria-live="polite" aria-atomic="true" aria-relevant="text">
+        <div class="clock-visual" role="timer" aria-live="off" aria-label="AI Singularity clock countdown">
+          <div class="display">00:00</div>
+        </div>
+      </div>
     </section>
 
-    <section class="clock-section" id="ecocide" aria-labelledby="ecocide-heading" data-cms-field="ecocide">
+    <section
+      class="clock-section"
+      id="ecocide"
+      aria-labelledby="ecocide-heading"
+      data-cms-field="ecocide"
+      tabindex="0"
+    >
       <h2 id="ecocide-heading">Ecocide Clock</h2>
       <p>Measuring irreversible damage to our planet.</p>
-      <div class="clock-wrap"><div class="clock-visual"><div class="display" aria-live="polite" aria-atomic="true"></div></div></div>
+      <div class="clock-wrap" aria-live="polite" aria-atomic="true" aria-relevant="text">
+        <div class="clock-visual" role="timer" aria-live="off" aria-label="Ecocide clock countdown">
+          <div class="display">00:00</div>
+        </div>
+      </div>
     </section>
 
     <!-- Testimonials -->
-    <section class="testimonials" aria-labelledby="testimonials-heading" data-cms-field="testimonials">
+    <section
+      class="testimonials"
+      aria-labelledby="testimonials-heading"
+      data-cms-field="testimonials"
+      tabindex="0"
+    >
       <h2 id="testimonials-heading">What Experts Say</h2>
-      <div class="slider" id="testimonial-slider" tabindex="0">
-        <div class="slide" tabindex="0">
+      <div id="testimonial-slider" role="list" aria-live="polite" aria-label="Expert testimonials">
+        <div class="slide" role="listitem">
           <blockquote>
             <p>“A breathtaking portrayal of our times—both beautiful and terrifying.”</p>
             <cite>— Dr. A. Researcher</cite>
           </blockquote>
         </div>
-        <div class="slide" tabindex="0">
+        <div class="slide" role="listitem">
           <blockquote>
             <p>“The visuals and narrative pulse sync perfectly with the urgency of AI risks.”</p>
             <cite>— Prof. M. AI</cite>
@@ -427,146 +454,157 @@
     </section>
 
     <!-- Finale -->
-    <section class="finale" role="contentinfo">
+    <section class="finale" role="contentinfo" tabindex="0">
       <h2>The Final Tick</h2>
       <p>Beyond these halls... silence.</p>
     </section>
   </main>
 
-  <!-- Footer -->
   <footer role="contentinfo">
     <div class="footer-content">
       <p>&copy; 2025 Hallway of Doom. All rights reserved.</p>
       <nav aria-label="Legal">
-        <a href="legal/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>
-        <a href="legal/terms.html" target="_blank" rel="noopener">Terms of Use</a>
-        <a href="legal/cookies.html" target="_blank" rel="noopener">Cookies</a>
+        <a href="legal/privacy.html">Privacy Policy</a>
+        <a href="legal/terms.html">Terms of Use</a>
+        <a href="legal/cookies.html">Cookies</a>
       </nav>
     </div>
   </footer>
 
-  <!-- Scripts: GSAP + ScrollTrigger + Custom -->
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.3/dist/gsap.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.3/dist/ScrollTrigger.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.3/dist/Flip.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/postprocessing/EffectComposer.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/postprocessing/RenderPass.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/postprocessing/GlitchPass.js"></script>
-
+  <!-- Inline Scripts for simplicity -->
   <script>
-    // Cookie banner
-    const banner = document.getElementById('cookie-banner');
-    const acceptBtn = document.getElementById('accept-cookies');
-    acceptBtn.addEventListener('click', () => {
-      banner.style.display = 'none';
-      localStorage.setItem('cookiesAccepted', 'true');
-    });
-    if(localStorage.getItem('cookiesAccepted') === 'true') {
-      banner.style.display = 'none';
-    }
+    // Wait for GSAP & Three.js libs loaded
+    document.addEventListener("DOMContentLoaded", () => {
+      const { gsap, ScrollTrigger, Flip } = window;
 
-    // Preloader fade out
-    window.addEventListener('load', () => {
-      const preloader = document.getElementById('preloader');
-      gsap.to(preloader, {
-        opacity: 0,
-        duration: 0.6,
-        onComplete: () => preloader.remove()
+      if (!gsap || !ScrollTrigger || !Flip) {
+        console.error("GSAP or plugins missing");
+        return;
+      }
+      gsap.registerPlugin(ScrollTrigger, Flip);
+
+      // Preloader logic with failsafe timeout
+      const preloader = document.getElementById("preloader");
+      function hidePreloader() {
+        if (!preloader) return;
+        preloader.classList.add("hidden");
+        setTimeout(() => preloader.remove(), 700);
+      }
+      window.addEventListener("load", hidePreloader);
+      setTimeout(hidePreloader, 5000); // failsafe
+
+      // Cursor
+      const cursor = document.querySelector(".cursor");
+      window.addEventListener("mousemove", (e) => {
+        cursor.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
       });
-    });
-
-    // Custom cursor
-    const cursor = document.querySelector('.cursor');
-    window.addEventListener('mousemove', e => {
-      cursor.style.transform = `translate(${e.clientX}px,${e.clientY}px)`;
-    });
-    document.querySelectorAll('a, .btn-primary, .clock-visual').forEach(el => {
-      el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
-      el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
-    });
-
-    // GSAP Register plugins
-    gsap.registerPlugin(ScrollTrigger, Flip);
-
-    // Flip animation on clock displays on scroll
-    gsap.utils.toArray('.clock-wrap').forEach(wrapper => {
-      const disp = wrapper.querySelector('.display');
-      let state = Flip.getState(disp);
-      ScrollTrigger.create({
-        trigger: wrapper,
-        start: 'top center',
-        onEnter: () => {
-          Flip.from(state, { duration: 0.6, ease: 'power2.inOut', absolute: true });
-          state = Flip.getState(disp);
-        }
+      document.querySelectorAll("a, .btn-primary, .clock-visual").forEach((el) => {
+        el.addEventListener("mouseenter", () => cursor.classList.add("hover"));
+        el.addEventListener("mouseleave", () => cursor.classList.remove("hover"));
       });
-    });
 
-    // Clock logic
-    function initClocks() {
-      document.querySelectorAll('.clock-visual').forEach((el, idx) => {
-        const disp = el.querySelector('.display');
-        // Each clock starts at 60*(idx+1) seconds countdown
-        let time = 60 * (idx + 1);
-        function tick() {
-          const mm = String(Math.floor(time / 60)).padStart(2, '0');
-          const ss = String(time % 60).padStart(2, '0');
-          disp.textContent = `${mm}:${ss}`;
-          time = (time - 1 + 3600) % 3600;
-          setTimeout(tick, 1000);
-        }
-        tick();
+      // Cookie banner accept
+      const cookieBanner = document.getElementById("cookie-banner");
+      const acceptBtn = document.getElementById("accept-cookies");
+      acceptBtn.addEventListener("click", () => {
+        cookieBanner.style.display = "none";
+        localStorage.setItem("cookiesAccepted", "true");
       });
-    }
-    initClocks();
+      if (localStorage.getItem("cookiesAccepted") === "true") {
+        cookieBanner.style.display = "none";
+      }
 
-    // Three.js hallway setup
-    function initHallway() {
-      const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
-      camera.position.z = 5;
+      // Initialize clocks
+      function initClocks() {
+        document.querySelectorAll(".clock-visual").forEach((clockEl, idx) => {
+          const display = clockEl.querySelector(".display");
+          // Start times in seconds for each clock (adjust as you like)
+          let time = 3600 * (idx + 1); // 1hr, 2hr, 3hr for demo
 
-      const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.setPixelRatio(window.devicePixelRatio);
-      renderer.setClearColor(0x0a0a0a, 0); // transparent bg
-      document.body.appendChild(renderer.domElement);
-      renderer.domElement.style.position = 'fixed';
-      renderer.domElement.style.top = '0';
-      renderer.domElement.style.left = '0';
-      renderer.domElement.style.zIndex = '0'; // behind everything
+          function tick() {
+            if (!display) return;
+            const mm = String(Math.floor(time / 60) % 60).padStart(2, "0");
+            const ss = String(time % 60).padStart(2, "0");
+            const hh = String(Math.floor(time / 3600)).padStart(2, "0");
+            display.textContent = `${hh}:${mm}:${ss}`;
+            time = (time - 1 + 3600 * 24) % (3600 * 24); // cycle daily for demo
+            setTimeout(tick, 1000);
+          }
+          tick();
+        });
+      }
+      initClocks();
 
-      const geometry = new THREE.BoxGeometry(10, 10, 50);
-      const material = new THREE.MeshBasicMaterial({ color: 0x010101, side: THREE.BackSide });
-      const hallwayMesh = new THREE.Mesh(geometry, material);
-      scene.add(hallwayMesh);
+      // Flip animations on scroll
+      gsap.utils.toArray(".clock-wrap").forEach((wrapper) => {
+        const disp = wrapper.querySelector(".display");
+        let state = Flip.getState(disp);
+        ScrollTrigger.create({
+          trigger: wrapper,
+          start: "top center",
+          onEnter: () => {
+            Flip.from(state, {
+              duration: 0.6,
+              ease: "power2.inOut",
+              absolute: true,
+            });
+            state = Flip.getState(disp);
+          },
+        });
+      });
 
-      // Postprocessing
-      const composer = new THREE.EffectComposer(renderer);
-      composer.addPass(new THREE.RenderPass(scene, camera));
-      const glitchPass = new THREE.GlitchPass();
-      composer.addPass(glitchPass);
+      // Initialize Three.js hallway with glitch effect
+      // Basic hallway box with glitch effect moving forward on scroll
+      (function initHallway() {
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(
+          60,
+          window.innerWidth / window.innerHeight,
+          0.1,
+          100
+        );
+        camera.position.z = 5;
 
-      function onResize() {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        composer.setSize(window.innerWidth, window.innerHeight);
-      }
-      window.addEventListener('resize', onResize);
-      onResize();
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setClearColor(0x0a0a0a, 1);
+        document.body.appendChild(renderer.domElement);
 
-      function animate() {
-        requestAnimationFrame(animate);
-        const scrollProgress = window.scrollY / (document.body.scrollHeight - window.innerHeight);
-        camera.position.z = 5 + scrollProgress * 25;
-        glitchPass.goWild = scrollProgress > 0.7;
-        composer.render();
-      }
-      animate();
-    }
-    initHallway();
+        // Hallway walls (large box with inward faces)
+        const geometry = new THREE.BoxGeometry(10, 10, 50);
+        const material = new THREE.MeshBasicMaterial({
+          color: 0x010101,
+          side: THREE.BackSide,
+        });
+        const box = new THREE.Mesh(geometry, material);
+        scene.add(box);
+
+        // Postprocessing composer and glitch pass
+        const composer = new THREE.EffectComposer(renderer);
+        composer.addPass(new THREE.RenderPass(scene, camera));
+        const glitchPass = new THREE.GlitchPass();
+        glitchPass.goWild = false;
+        composer.addPass(glitchPass);
+
+        window.addEventListener("resize", () => {
+          camera.aspect = window.innerWidth / window.innerHeight;
+          camera.updateProjectionMatrix();
+          renderer.setSize(window.innerWidth, window.innerHeight);
+          composer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        function animate() {
+          requestAnimationFrame(animate);
+          const scrollProgress =
+            window.scrollY / (document.body.scrollHeight - window.innerHeight);
+          camera.position.z = 5 + scrollProgress * 25;
+          glitchPass.goWild = scrollProgress > 0.7;
+          composer.render();
+        }
+        animate();
+      })();
+    });
   </script>
 </body>
 </html>
