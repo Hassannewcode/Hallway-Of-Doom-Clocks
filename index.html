@@ -62,9 +62,9 @@
     <!-- Testimonials -->
     <section class="testimonials" aria-labelledby="testimonials-heading" data-cms-field="testimonials">
       <h2 id="testimonials-heading">What Experts Say</h2>
-      <div class="slider">
-        <blockquote><p>“A breathtaking portrayal of our times—both beautiful and terrifying.”</p><cite>— Dr. A. Researcher</cite></blockquote>
-        <blockquote><p>“The visuals and narrative pulse sync perfectly with the urgency of AI risks.”</p><cite>— Prof. M. AI</cite></blockquote>
+      <div class="slider" id="testimonial-slider">
+        <div class="slide"><blockquote><p>“A breathtaking portrayal of our times—both beautiful and terrifying.”</p><cite>— Dr. A. Researcher</cite></blockquote></div>
+        <div class="slide"><blockquote><p>“The visuals and narrative pulse sync perfectly with the urgency of AI risks.”</p><cite>— Prof. M. AI</cite></blockquote></div>
       </div>
     </section>
 
@@ -94,7 +94,7 @@
 </html>
 
 
-<!-- File: styles.css -->
+/* File: styles.css */
 :root {
   --bg: #0a0a0a;
   --text: #f5f5f5;
@@ -112,7 +112,8 @@ section{padding:100px 20px;text-align:center;}
 .clock-wrap{margin:2rem 0;display:flex;justify-content:center;}
 .clock-visual{width:280px;height:120px;background:var(--led-dark);border-radius:8px;box-shadow:inset 0 0 20px #000;display:flex;justify-content:center;align-items:center;font-family:'Digital-7',monospace;font-size:3.5rem;color:var(--led-light);position:relative;} .clock-visual::before{content:"";position:absolute;width:250px;height:10px;background:rgba(255,255,255,0.05);top:10px;border-radius:5px;animation:pulse 2s ease-in-out infinite;} @keyframes pulse{0%,100%{opacity:0.05;}50%{opacity:0.2;}}
 .clock-section:hover .clock-visual{transform:scale(1.05);box-shadow:0 0 30px var(--led-light);transition:transform var(--transition-fast),box-shadow var(--transition-fast);}
-.testimonials{background:#111;color:var(--text);} .slider{display:grid;grid-auto-flow:column;overflow-x:auto;gap:2rem;padding:2rem 0;} blockquote{max-width:400px;} cite{display:block;margin-top:1rem;font-size:0.9rem;opacity:0.8;}
+.testimonials{background:#111;color:var(--text);} #testimonial-slider{display:grid;grid-auto-flow:column;overflow-x:auto;gap:2rem;padding:2rem 0;scroll-snap-type:x mandatory;} .slide{scroll-snap-align:center;min-width:80%;}
+blockquote{max-width:600px;margin:auto;} cite{display:block;margin-top:1rem;font-size:0.9rem;opacity:0.8;}
 .finale{padding:120px 20px;background:#000;}
 footer{background:#050505;padding:40px 20px;} footer .footer-content{max-width:960px;margin:auto;text-align:center;} footer nav a{color:var(--text);opacity:0.7;margin:0 0.8rem;font-size:0.9rem;transition:opacity var(--transition-fast);} footer nav a:hover{opacity:1;}
 #cookie-banner{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#222;color:var(--text);padding:1rem 1.5rem;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.5);display:flex;align-items:center;gap:1rem;z-index:1200;}#cookie-banner button{padding:0.5rem 1rem;background:var(--accent);border:none;color:#fff;border-radius:4px;cursor:pointer;}
@@ -126,55 +127,55 @@ import { initHallway } from "./hallway.js";
 import { initClocks } from "./clock.js";
 gsap.registerPlugin(ScrollTrigger, Flip);
 
-// Cookie banner
+// Cookie banner handling
 const banner = document.getElementById('cookie-banner');
 const acceptBtn = document.getElementById('accept-cookies');
 acceptBtn.addEventListener('click', () => banner.style.display = 'none');
 
-// Preloader
+// Preloader fade
 window.addEventListener('load', () => {
-  gsap.to("#preloader", { opacity: 0, duration: 0.6, onComplete: () => { document.getElementById('preloader').remove(); } });
+  gsap.to('#preloader', { opacity: 0, duration: 0.6, onComplete: () => document.getElementById('preloader').remove() });
 });
 
-// Cursor
+// Custom cursor
 const cursor = document.querySelector('.cursor');
 window.addEventListener('mousemove', e => cursor.style.transform = `translate(${e.clientX}px,${e.clientY}px)`);
-document.querySelectorAll('a, .clock-visual, .btn-primary').forEach(el => {
+document.querySelectorAll('a, .btn-primary, .clock-visual').forEach(el => {
   el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
   el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
 });
 
-// Initialize
+// Initialize 3 modules
 initHallway();
 initClocks();
 
-// Scroll-triggered Flip animations
+// Flip animations on scroll
 gsap.utils.toArray('.clock-wrap').forEach(wrapper => {
-  const display = wrapper.querySelector('.display');
-  let state = Flip.getState(display);
+  const disp = wrapper.querySelector('.display');
+  let state = Flip.getState(disp);
   ScrollTrigger.create({
     trigger: wrapper,
     start: 'top center',
     onEnter: () => {
       Flip.from(state, { duration: 0.6, ease: 'power2.inOut', absolute: true });
-      state = Flip.getState(display);
+      state = Flip.getState(disp);
     }
   });
 });
 
 /* File: clock.js */
-export function initClocks(){
+export function initClocks() {
   document.querySelectorAll('.clock-visual').forEach((el, idx) => {
-    const display = el.querySelector('.display');
-    let total = 60 * (idx + 1);
-    function step(){
-      const mm = String(Math.floor(total / 60)).padStart(2, '0');
-      const ss = String(total % 60).padStart(2, '0');
-      display.textContent = mm + ':' + ss;
-      total = (total - 1 + 3600) % 3600;
-      requestAnimationFrame(step);
+    const disp = el.querySelector('.display');
+    let time = 60 * (idx + 1);
+    function tick() {
+      const mm = String(Math.floor(time / 60)).padStart(2, '0');
+      const ss = String(time % 60).padStart(2, '0');
+      disp.textContent = `${mm}:${ss}`;
+      time = (time - 1 + 3600) % 3600;
+      setTimeout(tick, 1000);
     }
-    step();
+    tick();
   });
 }
 
@@ -184,7 +185,7 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { GlitchPass } from 'three/addons/postprocessing/GlitchPass.js';
 
-export function initHallway(){
+export function initHallway() {
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 100);
   camera.position.z = 5;
@@ -193,9 +194,9 @@ export function initHallway(){
   renderer.setPixelRatio(window.devicePixelRatio);
   document.body.appendChild(renderer.domElement);
 
-  const geom = new THREE.BoxGeometry(10, 10, 50);
-  const mat = new THREE.MeshBasicMaterial({ color:0x010101, side:THREE.BackSide });
-  scene.add(new THREE.Mesh(geom, mat));
+  const geometry = new THREE.BoxGeometry(10, 10, 50);
+  const material = new THREE.MeshBasicMaterial({ color: 0x010101, side: THREE.BackSide });
+  scene.add(new THREE.Mesh(geometry, material));
 
   const composer = new EffectComposer(renderer);
   composer.addPass(new RenderPass(scene, camera));
@@ -203,17 +204,17 @@ export function initHallway(){
   composer.addPass(glitch);
 
   window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth/window.innerHeight;
+    camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
     composer.setSize(window.innerWidth, window.innerHeight);
   });
 
-  function animate(){
+  function animate() {
     requestAnimationFrame(animate);
-    const prog = window.scrollY / (document.body.scrollHeight - window.innerHeight);
-    camera.position.z = 5 + prog * 25;
-    glitch.goWild = prog > 0.7;
+    const progress = window.scrollY / (document.body.scrollHeight - window.innerHeight);
+    camera.position.z = 5 + progress * 25;
+    glitch.goWild = progress > 0.7;
     composer.render();
   }
   animate();
