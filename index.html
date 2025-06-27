@@ -1,704 +1,1050 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Hall of Clocks - The Timezone Journey</title>
-  <meta name="description" content="An immersive hall of clocks showing every timezone worldwide, with scroll-driven storytelling, live synced digital clocks, and rich micro-interactions." />
+  <title>Hall of Clocks - Every Timezone, City & Country</title>
   <link rel="icon" href="favicon.ico" />
   
   <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet"/>
   
-  <!-- GSAP & ScrollTrigger -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" defer></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js" defer></script>
-  
-  <!-- Three.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r152/three.min.js" defer></script>
+  <!-- GSAP + ScrollTrigger -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
   
   <!-- Locomotive Scroll -->
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/locomotive-scroll@4.1.4/dist/locomotive-scroll.min.css"
-  />
-  <script src="https://cdn.jsdelivr.net/npm/locomotive-scroll@4.1.4/dist/locomotive-scroll.min.js" defer></script>
-
-  <!-- Lottie -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js" defer></script>
-
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/locomotive-scroll@4.1.4/dist/locomotive-scroll.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/locomotive-scroll@4.1.4/dist/locomotive-scroll.min.js"></script>
+  
   <style>
-    /* Reset + base */
+    /* Reset & base */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
     html, body {
       margin: 0; padding: 0;
-      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-      color: #e0e7f1;
+      background: #0a111f;
+      color: #e0e6f1;
       font-family: 'Inter', sans-serif;
       overflow-x: hidden;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
       height: 100%;
-      scroll-behavior: smooth;
     }
+    
     /* Loader */
     .loader {
       position: fixed;
       inset: 0;
-      background: #111a28;
-      color: #89aaff;
+      background: #0a111f;
+      color: #00d7ff;
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 2.4rem;
+      font-size: 2.5rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
       z-index: 9999;
       user-select: none;
-      font-weight: 700;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      font-family: monospace;
     }
-    /* Custom cursor */
+    
+    /* Custom Cursor */
     .custom-cursor {
       position: fixed;
       top: 0; left: 0;
       width: 20px; height: 20px;
-      background: #89aaff;
+      background: #00d7ff;
       border-radius: 50%;
       pointer-events: none;
       mix-blend-mode: difference;
       transition: transform 0.15s ease, background-color 0.3s ease;
-      z-index: 9999;
-      transform-origin: center;
-      will-change: transform, left, top, background-color;
-      box-shadow: 0 0 6px #89aaffaa;
+      z-index: 10000;
+      transform: translate3d(-50%, -50%, 0);
     }
-    /* Cursor hover effect */
     a:hover ~ .custom-cursor,
     button:hover ~ .custom-cursor,
-    input:hover ~ .custom-cursor {
-      background: #ffcc77;
-      box-shadow: 0 0 10px #ffcc77bb;
-      transform: scale(2);
+    .clock-card:hover ~ .custom-cursor,
+    .clock-card.focused ~ .custom-cursor {
+      transform: translate3d(-50%, -50%, 0) scale(2);
+      background-color: #00fff5;
     }
-    /* Search bar */
-    .search-bar {
-      position: fixed;
-      top: 1rem;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 350px;
-      max-width: 90vw;
-      z-index: 1000;
+    
+    /* Header & Title */
+    header {
+      padding: 2rem 4vw 1rem;
+      background: linear-gradient(90deg, #001d27, #003246);
+      box-shadow: 0 2px 15px #001d27aa;
+      position: sticky;
+      top: 0;
+      z-index: 5000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
     }
-    .search-bar input {
-      width: 100%;
-      padding: 0.75rem 1.2rem;
-      border: none;
-      border-radius: 10px;
-      font-size: 1rem;
-      outline: none;
-      background: #162a44;
-      color: #cdd6f4;
-      border: 2px solid #3b6aa0;
-      box-shadow: 0 0 8px rgba(77, 122, 194, 0.5);
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      transition: all 0.3s ease;
-      user-select: text;
-    }
-    .search-bar input::placeholder {
-      color: #7a8ba8;
-    }
-    .search-bar input:focus {
-      border-color: #ffcc77;
-      box-shadow: 0 0 12px #ffcc77bb;
-      background: #1b3762;
-      color: #fff;
-    }
-    /* Navigation */
-    nav {
-      position: fixed;
-      top: 1rem;
-      right: 1.5rem;
-      z-index: 1000;
-    }
-    nav button {
-      background: transparent;
-      border: 2px solid #89aaff;
-      border-radius: 8px;
-      color: #89aaff;
-      padding: 0.5rem 1rem;
+    header h1 {
+      margin: 0;
       font-weight: 700;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-family: monospace;
-      letter-spacing: 0.1em;
-      user-select: none;
+      font-size: clamp(1.8rem, 3vw, 2.8rem);
+      letter-spacing: 0.08em;
+      color: #00d7ff;
     }
-    nav button:hover,
-    nav button:focus {
-      background: #89aaff;
-      color: #111;
+    
+    /* Search bar */
+    #search-input {
+      font-size: 1rem;
+      padding: 0.6rem 1rem;
+      border-radius: 999px;
+      border: none;
       outline: none;
-      box-shadow: 0 0 10px #89aaffaa;
+      width: 260px;
+      max-width: 80vw;
+      background: #031721;
+      color: #00d7ff;
+      box-shadow: 0 0 8px #00d7ff88;
+      transition: box-shadow 0.3s ease;
     }
-    /* Headline */
-    .headline {
-      font-weight: 900;
-      font-size: clamp(3rem, 6vw, 6rem);
-      text-align: center;
-      margin: 7rem 1rem 2rem;
+    #search-input::placeholder {
+      color: #004860;
+    }
+    #search-input:focus {
+      box-shadow: 0 0 12px #00ffffcc;
+    }
+    
+    /* Settings button */
+    #settings-toggle {
+      font-size: 1.6rem;
+      background: none;
+      border: none;
+      color: #00d7ff;
+      cursor: pointer;
+      padding: 0.3rem 0.6rem;
+      border-radius: 6px;
+      transition: background-color 0.25s ease;
+    }
+    #settings-toggle:hover,
+    #settings-toggle:focus {
+      background-color: #003f56;
+      outline: none;
+    }
+    
+    /* Settings panel */
+    #settings-panel {
+      position: fixed;
+      bottom: 1.8rem;
+      right: 1.8rem;
+      background: #001f2e;
+      border-radius: 10px;
+      padding: 1rem 1.4rem;
+      box-shadow: 0 0 20px #00d7ffaa;
+      font-size: 0.95rem;
+      color: #00d7ff;
+      width: 280px;
+      max-width: 90vw;
+      display: none;
+      z-index: 10001;
       user-select: none;
-      line-height: 1.1;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      filter: drop-shadow(0 0 4px #89aaffaa);
     }
-    /* Subheading / Story text */
-    .story-text {
-      max-width: 720px;
-      margin: 0 auto 4rem;
-      font-weight: 400;
-      font-size: 1.15rem;
-      line-height: 1.5;
-      color: #a6b0d9cc;
-      text-align: center;
-      padding: 0 1rem;
+    #settings-panel label {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1rem;
+      cursor: pointer;
+    }
+    #settings-panel label span {
+      flex: 1;
       user-select: none;
-      letter-spacing: 0.03em;
     }
-    /* Clocks container - asymmetric grid */
-    .clocks-grid {
+    #settings-panel input[type="checkbox"] {
+      margin-left: 0.8rem;
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+    
+    /* Sound toggle */
+    #sound-toggle {
+      margin-top: 0.2rem;
+      font-weight: 700;
+      font-size: 1rem;
+      background: #003f56;
+      border: none;
+      color: #00d7ff;
+      padding: 0.4rem 0.8rem;
+      border-radius: 8px;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.3s ease;
+    }
+    #sound-toggle:hover,
+    #sound-toggle:focus {
+      background-color: #005e7c;
+      outline: none;
+    }
+    
+    /* Main container */
+    main {
+      padding: 1rem 4vw 4rem;
+      max-width: 1200px;
+      margin: auto;
+      min-height: 90vh;
+      outline: none;
+    }
+    
+    /* Clocks grid */
+    #clocks-container {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 2rem;
-      padding: 2rem 2rem 8rem;
-      max-width: 1600px;
-      margin: 0 auto 6rem;
-      user-select: none;
-      /* Asymmetric shape - create slight shift with nth-child */
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.2rem;
+      margin-top: 1.8rem;
+      outline: none;
     }
+    
     /* Clock card */
     .clock-card {
-      background: rgba(22, 42, 66, 0.85);
-      border: 1px solid #284b7d;
-      border-radius: 14px;
-      padding: 1.6rem 1.8rem;
-      text-align: center;
-      backdrop-filter: blur(8px);
-      box-shadow: 0 0 14px rgba(136, 173, 255, 0.15);
-      cursor: default;
-      transition:
-        transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-        box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      will-change: transform, box-shadow;
-      user-select: none;
-    }
-    /* Hover effect on clock */
-    .clock-card:hover,
-    .clock-card:focus-within {
-      transform: translateY(-10px) scale(1.05);
-      box-shadow: 0 0 20px #ffcc77;
-      border-color: #ffcc77;
-      outline: none;
-    }
-    /* Country/timezone name */
-    .clock-country {
-      font-weight: 700;
-      font-size: 1.25rem;
-      margin-bottom: 0.45rem;
-      text-transform: capitalize;
-      color: #ffd382;
-      user-select: text;
-    }
-    /* Digital time */
-    .clock-time {
-      font-size: 2.4rem;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      color: #fefefe;
-      user-select: text;
-      font-variant-numeric: tabular-nums;
-      font-family: 'Courier New', Courier, monospace;
-      filter: drop-shadow(0 0 3px #ffcc77aa);
-    }
-    /* Section padding for storytelling segments */
-    section {
-      position: relative;
-      max-width: 1200px;
-      margin: 0 auto 6rem;
-      padding: 2rem 1rem;
-    }
-    /* Sticky CTA at bottom */
-    .sticky-cta {
-      position: fixed;
-      bottom: 2rem;
-      right: 2rem;
-      background: #ffcc77;
-      color: #111;
-      font-weight: 700;
-      padding: 1rem 2rem;
+      background: #001f2e;
       border-radius: 12px;
-      box-shadow: 0 0 18px #ffcc77cc;
+      padding: 1rem 1.2rem 1.5rem;
+      box-shadow: 0 0 10px #00d7ff88;
+      transition: box-shadow 0.3s ease, transform 0.3s ease;
       cursor: pointer;
       user-select: none;
-      z-index: 1000;
-      font-family: monospace;
-      letter-spacing: 0.1em;
-      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      outline-offset: 2px;
     }
-    .sticky-cta:hover,
-    .sticky-cta:focus {
-      background: #ffd98b;
-      box-shadow: 0 0 24px #ffd98bcc;
+    .clock-card:hover,
+    .clock-card.focused {
+      box-shadow: 0 0 22px #00fff5dd;
+      transform: scale(1.04);
+      z-index: 10;
       outline: none;
     }
-    /* Responsive adjustments */
+    
+    /* Location text */
+    .location {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #00d7ff;
+      margin-bottom: 0.15rem;
+      user-select: text;
+    }
+    /* Country text */
+    .country {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #00a9cc;
+      margin-bottom: 0.8rem;
+      user-select: text;
+    }
+    /* Timezone text */
+    .timezone-label {
+      font-size: 0.8rem;
+      font-weight: 400;
+      color: #0088aa;
+      user-select: text;
+      margin-top: 0.8rem;
+    }
+    
+    /* Highlighted search */
+    .highlight {
+      background-color: #004860;
+      border-radius: 3px;
+      padding: 0 4px;
+      color: #00ffff;
+    }
+    
+    /* Digital clock style */
+    .digital-clock {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 1.8rem;
+      letter-spacing: 0.06em;
+      color: #00ffff;
+      user-select: none;
+      text-shadow:
+        0 0 6px #00d7ff,
+        0 0 12px #00d7ffaa;
+      margin-bottom: 0.6rem;
+    }
+    
+    /* Analog clock canvas */
+    canvas.clock-canvas {
+      user-select: none;
+      margin-bottom: 0.6rem;
+      filter: drop-shadow(0 0 5px #00d7ff99);
+      border-radius: 50%;
+      background: #011523;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    /* Responsive */
     @media (max-width: 600px) {
-      .headline {
-        font-size: 2.6rem;
+      #clocks-container {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 1rem;
       }
-      .search-bar {
-        width: 90vw;
+      .digital-clock {
+        font-size: 1.2rem;
       }
-      .clock-time {
-        font-size: 1.8rem;
-      }
-      .clock-country {
+      .location {
         font-size: 1rem;
       }
-      .sticky-cta {
-        bottom: 1rem;
-        right: 1rem;
-        padding: 0.75rem 1.5rem;
-        font-size: 0.9rem;
+      .country {
+        font-size: 0.85rem;
       }
-    }
-    /* Three.js canvas background */
-    canvas#bg {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: 0;
-      pointer-events: none;
-      user-select: none;
-    }
-    /* Animated favicon style */
-    link[rel="icon"] {
-      transition: transform 0.3s ease;
     }
   </style>
 </head>
 <body>
-  <!-- Loader -->
   <div class="loader" role="alert" aria-live="assertive" aria-busy="true">Loading Clocks...</div>
-
-  <!-- Custom cursor -->
-  <div class="custom-cursor" aria-hidden="true"></div>
-
-  <!-- Three.js background canvas -->
-  <canvas id="bg" aria-hidden="true"></canvas>
-
-  <!-- Search bar -->
-  <div class="search-bar" role="search">
-    <input
-      id="search"
-      type="search"
-      placeholder="Search country or city..."
-      autocomplete="off"
-      spellcheck="false"
-      aria-label="Search timezones by country or city"
-      aria-describedby="search-desc"
-    />
-    <div id="search-desc" class="visually-hidden">Type to filter clocks by country or city name</div>
-  </div>
-
-  <!-- Navigation -->
-  <nav>
-    <button id="sound-toggle" aria-pressed="false" aria-label="Toggle ambient sound">🔈 Sound Off</button>
-  </nav>
-
-  <!-- Main content -->
-  <main id="main-content" data-scroll-container>
-    <section aria-labelledby="intro-title">
-      <h1 class="headline" id="intro-title">Hall of Clocks: The Timezone Journey</h1>
-      <p class="story-text" tabindex="0">
-        Explore every timezone in the world in real-time. Scroll through this immersive hall where each clock tells a story of its own city or country.
-        Use the search box above to find your timezone instantly. Feel the pulse of time, synced perfectly with your system clock.
-      </p>
-    </section>
-    <section aria-labelledby="clocks-title">
-      <h2 id="clocks-title" class="story-text" style="text-align:center; font-weight:700; font-size:1.8rem; color:#ffd382; margin-bottom:2rem;">
-        The Clocks
-      </h2>
-      <div class="clocks-grid" id="clocks" role="list" aria-live="polite" aria-relevant="additions removals"></div>
-    </section>
+  <div class="custom-cursor"></div>
+  
+  <header>
+    <h1>Hall of Clocks</h1>
+    <input id="search-input" type="search" aria-label="Search cities, countries, or timezones" placeholder="Search timezones, cities, countries..." autocomplete="off" />
+    <button id="settings-toggle" aria-label="Open settings panel" aria-haspopup="true" aria-expanded="false" title="Settings ⚙️">⚙️</button>
+  </header>
+  
+  <main id="main-content" tabindex="-1" data-scroll-container>
+    <section id="clocks-container" role="list" aria-live="polite" aria-relevant="additions"></section>
   </main>
-
-  <!-- Sticky CTA -->
-  <button class="sticky-cta" id="top-button" aria-label="Scroll to top">↑ Back to Top</button>
-
-  <!-- Cookie Consent -->
-  <div id="cookie-consent" role="alertdialog" aria-modal="true" aria-live="polite" aria-labelledby="cookie-title" aria-describedby="cookie-desc" style="display:none; position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%); background:#162a44; color:#cdd6f4; padding:1rem 2rem; border-radius:10px; box-shadow: 0 0 20px #89aaffaa; z-index:10000; max-width: 90vw; font-size: 0.9rem; user-select:none;">
-    <h3 id="cookie-title" style="margin:0 0 0.5rem 0; font-weight:700;">Cookie Consent</h3>
-    <p id="cookie-desc" style="margin:0 0 1rem 0;">This site uses cookies for analytics and to improve your experience. By continuing, you agree to our <a href="#" style="color:#ffcc77;" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.</p>
-    <button id="cookie-accept" style="background:#ffcc77; border:none; padding:0.5rem 1rem; border-radius:8px; font-weight:700; cursor:pointer; user-select:none;">Accept</button>
-  </div>
-
-  <div class="visually-hidden" style="position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden;"> <!-- for screen reader text --> </div>
-
+  
+  <aside id="settings-panel" aria-label="Settings Panel" role="region" aria-hidden="true" tabindex="-1">
+    <label for="toggle-12h"><span>Use 12-hour format</span><input type="checkbox" id="toggle-12h" aria-checked="false" /></label>
+    <label for="toggle-analog"><span>Use Analog clocks</span><input type="checkbox" id="toggle-analog" aria-checked="false" /></label>
+    <button id="sound-toggle" aria-pressed="false" aria-label="Toggle sound">🔈 Sound Off</button>
+  </aside>
+  
   <script>
-    // Wait for DOMContentLoaded for smooth experience
-    window.addEventListener('DOMContentLoaded', () => {
-      // Loader fade out
-      gsap.to(".loader", {
-        y: "-100%",
-        delay: 1,
-        duration: 1,
-        ease: "power4.inOut",
-        onComplete: () => document.querySelector(".loader").style.display = 'none'
-      });
-
-      // GSAP headline animation
-      gsap.from(".headline", {
-        y: 50,
-        opacity: 0,
-        delay: 2,
-        duration: 1.2,
-        ease: "power4.out"
-      });
-
-      // Initialize Locomotive Scroll
-      const scroll = new LocomotiveScroll({
-        el: document.querySelector("[data-scroll-container]"),
-        smooth: true,
-        multiplier: 1,
-        reloadOnContextChange: true
-      });
-
-      // Custom cursor
-      const cursor = document.querySelector(".custom-cursor");
-      window.addEventListener("mousemove", e => {
-        cursor.style.left = e.clientX + "px";
-        cursor.style.top = e.clientY + "px";
-      });
-      document.querySelectorAll("a, button, input").forEach(el => {
-        el.addEventListener("mouseenter", () => {
-          cursor.style.transform = "scale(2)";
-          cursor.style.backgroundColor = "#ffcc77";
-          cursor.style.boxShadow = "0 0 15px #ffcc77cc";
-        });
-        el.addEventListener("mouseleave", () => {
-          cursor.style.transform = "scale(1)";
-          cursor.style.backgroundColor = "#89aaff";
-          cursor.style.boxShadow = "0 0 6px #89aaffaa";
-        });
-      });
-
-      // Animated favicon
-      const favicon = document.querySelector('link[rel="icon"]');
-      let faviconFrames = [
-        "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><circle fill='%23ffcc77' cx='8' cy='8' r='7'/></svg>",
-        "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><circle fill='%23ffe0a1' cx='8' cy='8' r='7'/></svg>",
-        "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><circle fill='%23ffcc77' cx='8' cy='8' r='7'/></svg>"
-      ];
-      let favIndex = 0;
-      setInterval(() => {
-        favicon.href = faviconFrames[favIndex];
-        favIndex = (favIndex + 1) % faviconFrames.length;
-      }, 1200);
-
-      // Sound toggle logic
-      let soundEnabled = false;
-      const soundBtn = document.getElementById('sound-toggle');
-      // Simple ambient sound loop (optional)
-      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      let oscillator;
-      function startSound() {
-        if (!oscillator) {
-          oscillator = audioContext.createOscillator();
-          oscillator.type = "sine";
-          oscillator.frequency.setValueAtTime(220, audioContext.currentTime);
-          oscillator.connect(audioContext.destination);
-          oscillator.start();
+    // Timezones dataset - partial sample, add more or replace with full dataset as needed
+    const timezones = [
+      // Africa
+      {zone:"Africa/Abidjan", country:"Côte d'Ivoire", city:"Abidjan"},
+      {zone:"Africa/Accra", country:"Ghana", city:"Accra"},
+      {zone:"Africa/Addis_Ababa", country:"Ethiopia", city:"Addis Ababa"},
+      {zone:"Africa/Algiers", country:"Algeria", city:"Algiers"},
+      {zone:"Africa/Asmara", country:"Eritrea", city:"Asmara"},
+      {zone:"Africa/Bamako", country:"Mali", city:"Bamako"},
+      {zone:"Africa/Bangui", country:"Central African Republic", city:"Bangui"},
+      {zone:"Africa/Banjul", country:"Gambia", city:"Banjul"},
+      {zone:"Africa/Bissau", country:"Guinea-Bissau", city:"Bissau"},
+      {zone:"Africa/Blantyre", country:"Malawi", city:"Blantyre"},
+      {zone:"Africa/Brazzaville", country:"Republic of the Congo", city:"Brazzaville"},
+      {zone:"Africa/Bujumbura", country:"Burundi", city:"Bujumbura"},
+      {zone:"Africa/Cairo", country:"Egypt", city:"Cairo"},
+      {zone:"Africa/Casablanca", country:"Morocco", city:"Casablanca"},
+      {zone:"Africa/Ceuta", country:"Spain", city:"Ceuta"},
+      {zone:"Africa/Conakry", country:"Guinea", city:"Conakry"},
+      {zone:"Africa/Dakar", country:"Senegal", city:"Dakar"},
+      {zone:"Africa/Dar_es_Salaam", country:"Tanzania", city:"Dar es Salaam"},
+      {zone:"Africa/Djibouti", country:"Djibouti", city:"Djibouti"},
+      {zone:"Africa/Douala", country:"Cameroon", city:"Douala"},
+      {zone:"Africa/El_Aaiun", country:"Western Sahara", city:"El Aaiun"},
+      {zone:"Africa/Freetown", country:"Sierra Leone", city:"Freetown"},
+      {zone:"Africa/Gaborone", country:"Botswana", city:"Gaborone"},
+      {zone:"Africa/Harare", country:"Zimbabwe", city:"Harare"},
+      {zone:"Africa/Johannesburg", country:"South Africa", city:"Johannesburg"},
+      {zone:"Africa/Juba", country:"South Sudan", city:"Juba"},
+      {zone:"Africa/Kampala", country:"Uganda", city:"Kampala"},
+      {zone:"Africa/Khartoum", country:"Sudan", city:"Khartoum"},
+      {zone:"Africa/Kigali", country:"Rwanda", city:"Kigali"},
+      {zone:"Africa/Kinshasa", country:"Democratic Republic of the Congo", city:"Kinshasa"},
+      {zone:"Africa/Lagos", country:"Nigeria", city:"Lagos"},
+      {zone:"Africa/Libreville", country:"Gabon", city:"Libreville"},
+      {zone:"Africa/Lome", country:"Togo", city:"Lome"},
+      {zone:"Africa/Luanda", country:"Angola", city:"Luanda"},
+      {zone:"Africa/Lubumbashi", country:"Democratic Republic of the Congo", city:"Lubumbashi"},
+      {zone:"Africa/Lusaka", country:"Zambia", city:"Lusaka"},
+      {zone:"Africa/Malabo", country:"Equatorial Guinea", city:"Malabo"},
+      {zone:"Africa/Maputo", country:"Mozambique", city:"Maputo"},
+      {zone:"Africa/Maseru", country:"Lesotho", city:"Maseru"},
+      {zone:"Africa/Mbabane", country:"Eswatini", city:"Mbabane"},
+      {zone:"Africa/Mogadishu", country:"Somalia", city:"Mogadishu"},
+      {zone:"Africa/Monrovia", country:"Liberia", city:"Monrovia"},
+      {zone:"Africa/Nairobi", country:"Kenya", city:"Nairobi"},
+      {zone:"Africa/Ndjamena", country:"Chad", city:"Ndjamena"},
+      {zone:"Africa/Niamey", country:"Niger", city:"Niamey"},
+      {zone:"Africa/Nouakchott", country:"Mauritania", city:"Nouakchott"},
+      {zone:"Africa/Ouagadougou", country:"Burkina Faso", city:"Ouagadougou"},
+      {zone:"Africa/Porto-Novo", country:"Benin", city:"Porto-Novo"},
+      {zone:"Africa/Sao_Tome", country:"São Tomé and Príncipe", city:"Sao Tome"},
+      {zone:"Africa/Tripoli", country:"Libya", city:"Tripoli"},
+      {zone:"Africa/Tunis", country:"Tunisia", city:"Tunis"},
+      {zone:"Africa/Windhoek", country:"Namibia", city:"Windhoek"},
+      // America
+      {zone:"America/Adak", country:"USA", city:"Adak"},
+      {zone:"America/Anchorage", country:"USA", city:"Anchorage"},
+      {zone:"America/Anguilla", country:"Anguilla", city:"Anguilla"},
+      {zone:"America/Antigua", country:"Antigua and Barbuda", city:"Antigua"},
+      {zone:"America/Araguaina", country:"Brazil", city:"Araguaina"},
+      {zone:"America/Argentina/Buenos_Aires", country:"Argentina", city:"Buenos Aires"},
+      {zone:"America/Argentina/Catamarca", country:"Argentina", city:"Catamarca"},
+      {zone:"America/Argentina/Cordoba", country:"Argentina", city:"Cordoba"},
+      {zone:"America/Argentina/Jujuy", country:"Argentina", city:"Jujuy"},
+      {zone:"America/Argentina/La_Rioja", country:"Argentina", city:"La Rioja"},
+      {zone:"America/Argentina/Mendoza", country:"Argentina", city:"Mendoza"},
+      {zone:"America/Argentina/Rio_Gallegos", country:"Argentina", city:"Rio Gallegos"},
+      {zone:"America/Argentina/Salta", country:"Argentina", city:"Salta"},
+      {zone:"America/Argentina/San_Juan", country:"Argentina", city:"San Juan"},
+      {zone:"America/Argentina/San_Luis", country:"Argentina", city:"San Luis"},
+      {zone:"America/Argentina/Tucuman", country:"Argentina", city:"Tucuman"},
+      {zone:"America/Argentina/Ushuaia", country:"Argentina", city:"Ushuaia"},
+      {zone:"America/Aruba", country:"Aruba", city:"Aruba"},
+      {zone:"America/Asuncion", country:"Paraguay", city:"Asuncion"},
+      {zone:"America/Atikokan", country:"Canada", city:"Atikokan"},
+      {zone:"America/Bahia", country:"Brazil", city:"Bahia"},
+      {zone:"America/Bahia_Banderas", country:"Mexico", city:"Bahia Banderas"},
+      {zone:"America/Barbados", country:"Barbados", city:"Barbados"},
+      {zone:"America/Belem", country:"Brazil", city:"Belem"},
+      {zone:"America/Belize", country:"Belize", city:"Belize"},
+      {zone:"America/Blanc-Sablon", country:"Canada", city:"Blanc-Sablon"},
+      {zone:"America/Boa_Vista", country:"Brazil", city:"Boa Vista"},
+      {zone:"America/Bogota", country:"Colombia", city:"Bogota"},
+      {zone:"America/Boise", country:"USA", city:"Boise"},
+      {zone:"America/Cambridge_Bay", country:"Canada", city:"Cambridge Bay"},
+      {zone:"America/Campo_Grande", country:"Brazil", city:"Campo Grande"},
+      {zone:"America/Cancun", country:"Mexico", city:"Cancun"},
+      {zone:"America/Caracas", country:"Venezuela", city:"Caracas"},
+      {zone:"America/Cayenne", country:"French Guiana", city:"Cayenne"},
+      {zone:"America/Cayman", country:"Cayman Islands", city:"Cayman"},
+      {zone:"America/Chicago", country:"USA", city:"Chicago"},
+      {zone:"America/Chihuahua", country:"Mexico", city:"Chihuahua"},
+      {zone:"America/Costa_Rica", country:"Costa Rica", city:"Costa Rica"},
+      {zone:"America/Creston", country:"Canada", city:"Creston"},
+      {zone:"America/Cuiaba", country:"Brazil", city:"Cuiaba"},
+      {zone:"America/Curacao", country:"Curaçao", city:"Curacao"},
+      {zone:"America/Danmarkshavn", country:"Greenland", city:"Danmarkshavn"},
+      {zone:"America/Dawson", country:"Canada", city:"Dawson"},
+      {zone:"America/Dawson_Creek", country:"Canada", city:"Dawson Creek"},
+      {zone:"America/Denver", country:"USA", city:"Denver"},
+      {zone:"America/Detroit", country:"USA", city:"Detroit"},
+      {zone:"America/Dominica", country:"Dominica", city:"Dominica"},
+      {zone:"America/Edmonton", country:"Canada", city:"Edmonton"},
+      {zone:"America/Eirunepe", country:"Brazil", city:"Eirunepe"},
+      {zone:"America/El_Salvador", country:"El Salvador", city:"El Salvador"},
+      {zone:"America/Fort_Nelson", country:"Canada", city:"Fort Nelson"},
+      {zone:"America/Fortaleza", country:"Brazil", city:"Fortaleza"},
+      {zone:"America/Glace_Bay", country:"Canada", city:"Glace Bay"},
+      {zone:"America/Godthab", country:"Greenland", city:"Godthab"},
+      {zone:"America/Goose_Bay", country:"Canada", city:"Goose Bay"},
+      {zone:"America/Grand_Turk", country:"Turks and Caicos Islands", city:"Grand Turk"},
+      {zone:"America/Grenada", country:"Grenada", city:"Grenada"},
+      {zone:"America/Guadeloupe", country:"Guadeloupe", city:"Guadeloupe"},
+      {zone:"America/Guatemala", country:"Guatemala", city:"Guatemala"},
+      {zone:"America/Guayaquil", country:"Ecuador", city:"Guayaquil"},
+      {zone:"America/Guyana", country:"Guyana", city:"Guyana"},
+      {zone:"America/Halifax", country:"Canada", city:"Halifax"},
+      {zone:"America/Havana", country:"Cuba", city:"Havana"},
+      {zone:"America/Hermosillo", country:"Mexico", city:"Hermosillo"},
+      {zone:"America/Indiana/Indianapolis", country:"USA", city:"Indianapolis"},
+      {zone:"America/Indiana/Knox", country:"USA", city:"Knox"},
+      {zone:"America/Indiana/Marengo", country:"USA", city:"Marengo"},
+      {zone:"America/Indiana/Petersburg", country:"USA", city:"Petersburg"},
+      {zone:"America/Indiana/Tell_City", country:"USA", city:"Tell City"},
+      {zone:"America/Indiana/Vevay", country:"USA", city:"Vevay"},
+      {zone:"America/Indiana/Vincennes", country:"USA", city:"Vincennes"},
+      {zone:"America/Indiana/Winamac", country:"USA", city:"Winamac"},
+      {zone:"America/Inuvik", country:"Canada", city:"Inuvik"},
+      {zone:"America/Iqaluit", country:"Canada", city:"Iqaluit"},
+      {zone:"America/Jamaica", country:"Jamaica", city:"Jamaica"},
+      {zone:"America/Juneau", country:"USA", city:"Juneau"},
+      {zone:"America/Kentucky/Louisville", country:"USA", city:"Louisville"},
+      {zone:"America/Kentucky/Monticello", country:"USA", city:"Monticello"},
+      {zone:"America/Kralendijk", country:"Bonaire, Sint Eustatius and Saba", city:"Kralendijk"},
+      {zone:"America/La_Paz", country:"Bolivia", city:"La Paz"},
+      {zone:"America/Lima", country:"Peru", city:"Lima"},
+      {zone:"America/Los_Angeles", country:"USA", city:"Los Angeles"},
+      {zone:"America/Lower_Princes", country:"Sint Maarten", city:"Lower Princes"},
+      {zone:"America/Maceio", country:"Brazil", city:"Maceio"},
+      {zone:"America/Managua", country:"Nicaragua", city:"Managua"},
+      {zone:"America/Manaus", country:"Brazil", city:"Manaus"},
+      {zone:"America/Marigot", country:"Saint Martin", city:"Marigot"},
+      {zone:"America/Martinique", country:"Martinique", city:"Martinique"},
+      {zone:"America/Matamoros", country:"Mexico", city:"Matamoros"},
+      {zone:"America/Mazatlan", country:"Mexico", city:"Mazatlan"},
+      {zone:"America/Menominee", country:"USA", city:"Menominee"},
+      {zone:"America/Merida", country:"Mexico", city:"Merida"},
+      {zone:"America/Metlakatla", country:"USA", city:"Metlakatla"},
+      {zone:"America/Mexico_City", country:"Mexico", city:"Mexico City"},
+      {zone:"America/Miquelon", country:"Saint Pierre and Miquelon", city:"Miquelon"},
+      {zone:"America/Moncton", country:"Canada", city:"Moncton"},
+      {zone:"America/Monterrey", country:"Mexico", city:"Monterrey"},
+      {zone:"America/Montevideo", country:"Uruguay", city:"Montevideo"},
+      {zone:"America/Montreal", country:"Canada", city:"Montreal"},
+      {zone:"America/Montserrat", country:"Montserrat", city:"Montserrat"},
+      {zone:"America/Nassau", country:"Bahamas", city:"Nassau"},
+      {zone:"America/New_York", country:"USA", city:"New York"},
+      {zone:"America/Nipigon", country:"Canada", city:"Nipigon"},
+      {zone:"America/Nome", country:"USA", city:"Nome"},
+      {zone:"America/Noronha", country:"Brazil", city:"Noronha"},
+      {zone:"America/North_Dakota/Beulah", country:"USA", city:"Beulah"},
+      {zone:"America/North_Dakota/Center", country:"USA", city:"Center"},
+      {zone:"America/North_Dakota/New_Salem", country:"USA", city:"New Salem"},
+      {zone:"America/Ojinaga", country:"Mexico", city:"Ojinaga"},
+      {zone:"America/Panama", country:"Panama", city:"Panama"},
+      {zone:"America/Pangnirtung", country:"Canada", city:"Pangnirtung"},
+      {zone:"America/Paramaribo", country:"Suriname", city:"Paramaribo"},
+      {zone:"America/Phoenix", country:"USA", city:"Phoenix"},
+      {zone:"America/Port-au-Prince", country:"Haiti", city:"Port-au-Prince"},
+      {zone:"America/Port_of_Spain", country:"Trinidad and Tobago", city:"Port of Spain"},
+      {zone:"America/Porto_Velho", country:"Brazil", city:"Porto Velho"},
+      {zone:"America/Puerto_Rico", country:"Puerto Rico", city:"Puerto Rico"},
+      {zone:"America/Rainy_River", country:"Canada", city:"Rainy River"},
+      {zone:"America/Rankin_Inlet", country:"Canada", city:"Rankin Inlet"},
+      {zone:"America/Recife", country:"Brazil", city:"Recife"},
+      {zone:"America/Regina", country:"Canada", city:"Regina"},
+      {zone:"America/Resolute", country:"Canada", city:"Resolute"},
+      {zone:"America/Rio_Branco", country:"Brazil", city:"Rio Branco"},
+      {zone:"America/Santarem", country:"Brazil", city:"Santarem"},
+      {zone:"America/Santiago", country:"Chile", city:"Santiago"},
+      {zone:"America/Santo_Domingo", country:"Dominican Republic", city:"Santo Domingo"},
+      {zone:"America/Sao_Paulo", country:"Brazil", city:"Sao Paulo"},
+      {zone:"America/Scoresbysund", country:"Greenland", city:"Scoresbysund"},
+      {zone:"America/Sitka", country:"USA", city:"Sitka"},
+      {zone:"America/St_Barthelemy", country:"Saint Barthelemy", city:"St Barthelemy"},
+      {zone:"America/St_Johns", country:"Canada", city:"St Johns"},
+      {zone:"America/St_Kitts", country:"Saint Kitts and Nevis", city:"St Kitts"},
+      {zone:"America/St_Lucia", country:"Saint Lucia", city:"St Lucia"},
+      {zone:"America/St_Thomas", country:"U.S. Virgin Islands", city:"St Thomas"},
+      {zone:"America/St_Vincent", country:"Saint Vincent and the Grenadines", city:"St Vincent"},
+      {zone:"America/Swift_Current", country:"Canada", city:"Swift Current"},
+      {zone:"America/Tegucigalpa", country:"Honduras", city:"Tegucigalpa"},
+      {zone:"America/Thule", country:"Greenland", city:"Thule"},
+      {zone:"America/Thunder_Bay", country:"Canada", city:"Thunder Bay"},
+      {zone:"America/Tijuana", country:"Mexico", city:"Tijuana"},
+      {zone:"America/Toronto", country:"Canada", city:"Toronto"},
+      {zone:"America/Tortola", country:"British Virgin Islands", city:"Tortola"},
+      {zone:"America/Vancouver", country:"Canada", city:"Vancouver"},
+      {zone:"America/Whitehorse", country:"Canada", city:"Whitehorse"},
+      {zone:"America/Winnipeg", country:"Canada", city:"Winnipeg"},
+      {zone:"America/Yakutat", country:"USA", city:"Yakutat"},
+      {zone:"America/Yellowknife", country:"Canada", city:"Yellowknife"},
+      // Antarctica
+      {zone:"Antarctica/Casey", country:"Antarctica", city:"Casey"},
+      {zone:"Antarctica/Davis", country:"Antarctica", city:"Davis"},
+      {zone:"Antarctica/DumontDUrville", country:"Antarctica", city:"Dumont d'Urville"},
+      {zone:"Antarctica/Macquarie", country:"Antarctica", city:"Macquarie"},
+      {zone:"Antarctica/Mawson", country:"Antarctica", city:"Mawson"},
+      {zone:"Antarctica/Palmer", country:"Antarctica", city:"Palmer"},
+      {zone:"Antarctica/Rothera", country:"Antarctica", city:"Rothera"},
+      {zone:"Antarctica/Syowa", country:"Antarctica", city:"Syowa"},
+      {zone:"Antarctica/Troll", country:"Antarctica", city:"Troll"},
+      {zone:"Antarctica/Vostok", country:"Antarctica", city:"Vostok"},
+      // Asia
+      {zone:"Asia/Aden", country:"Yemen", city:"Aden"},
+      {zone:"Asia/Almaty", country:"Kazakhstan", city:"Almaty"},
+      {zone:"Asia/Amman", country:"Jordan", city:"Amman"},
+      {zone:"Asia/Anadyr", country:"Russia", city:"Anadyr"},
+      {zone:"Asia/Aqtau", country:"Kazakhstan", city:"Aqtau"},
+      {zone:"Asia/Aqtobe", country:"Kazakhstan", city:"Aqtobe"},
+      {zone:"Asia/Ashgabat", country:"Turkmenistan", city:"Ashgabat"},
+      {zone:"Asia/Baghdad", country:"Iraq", city:"Baghdad"},
+      {zone:"Asia/Bahrain", country:"Bahrain", city:"Bahrain"},
+      {zone:"Asia/Baku", country:"Azerbaijan", city:"Baku"},
+      {zone:"Asia/Bangkok", country:"Thailand", city:"Bangkok"},
+      {zone:"Asia/Barnaul", country:"Russia", city:"Barnaul"},
+      {zone:"Asia/Beirut", country:"Lebanon", city:"Beirut"},
+      {zone:"Asia/Bishkek", country:"Kyrgyzstan", city:"Bishkek"},
+      {zone:"Asia/Brunei", country:"Brunei", city:"Brunei"},
+      {zone:"Asia/Chita", country:"Russia", city:"Chita"},
+      {zone:"Asia/Choibalsan", country:"Mongolia", city:"Choibalsan"},
+      {zone:"Asia/Colombo", country:"Sri Lanka", city:"Colombo"},
+      {zone:"Asia/Damascus", country:"Syria", city:"Damascus"},
+      {zone:"Asia/Dhaka", country:"Bangladesh", city:"Dhaka"},
+      {zone:"Asia/Dili", country:"Timor-Leste", city:"Dili"},
+      {zone:"Asia/Dubai", country:"UAE", city:"Dubai"},
+      {zone:"Asia/Dushanbe", country:"Tajikistan", city:"Dushanbe"},
+      {zone:"Asia/Famagusta", country:"Cyprus", city:"Famagusta"},
+      {zone:"Asia/Gaza", country:"Palestine", city:"Gaza"},
+      {zone:"Asia/Hebron", country:"Palestine", city:"Hebron"},
+      {zone:"Asia/Ho_Chi_Minh", country:"Vietnam", city:"Ho Chi Minh"},
+      {zone:"Asia/Hong_Kong", country:"Hong Kong", city:"Hong Kong"},
+      {zone:"Asia/Hovd", country:"Mongolia", city:"Hovd"},
+      {zone:"Asia/Irkutsk", country:"Russia", city:"Irkutsk"},
+      {zone:"Asia/Jakarta", country:"Indonesia", city:"Jakarta"},
+      {zone:"Asia/Jayapura", country:"Indonesia", city:"Jayapura"},
+      {zone:"Asia/Jerusalem", country:"Israel", city:"Jerusalem"},
+      {zone:"Asia/Kabul", country:"Afghanistan", city:"Kabul"},
+      {zone:"Asia/Kamchatka", country:"Russia", city:"Kamchatka"},
+      {zone:"Asia/Karachi", country:"Pakistan", city:"Karachi"},
+      {zone:"Asia/Kathmandu", country:"Nepal", city:"Kathmandu"},
+      {zone:"Asia/Khandyga", country:"Russia", city:"Khandyga"},
+      {zone:"Asia/Kolkata", country:"India", city:"Kolkata"},
+      {zone:"Asia/Krasnoyarsk", country:"Russia", city:"Krasnoyarsk"},
+      {zone:"Asia/Kuala_Lumpur", country:"Malaysia", city:"Kuala Lumpur"},
+      {zone:"Asia/Kuching", country:"Malaysia", city:"Kuching"},
+      {zone:"Asia/Macau", country:"China", city:"Macau"},
+      {zone:"Asia/Magadan", country:"Russia", city:"Magadan"},
+      {zone:"Asia/Makassar", country:"Indonesia", city:"Makassar"},
+      {zone:"Asia/Manila", country:"Philippines", city:"Manila"},
+      {zone:"Asia/Muscat", country:"Oman", city:"Muscat"},
+      {zone:"Asia/Nicosia", country:"Cyprus", city:"Nicosia"},
+      {zone:"Asia/Novokuznetsk", country:"Russia", city:"Novokuznetsk"},
+      {zone:"Asia/Novosibirsk", country:"Russia", city:"Novosibirsk"},
+      {zone:"Asia/Omsk", country:"Russia", city:"Omsk"},
+      {zone:"Asia/Oral", country:"Kazakhstan", city:"Oral"},
+      {zone:"Asia/Phnom_Penh", country:"Cambodia", city:"Phnom Penh"},
+      {zone:"Asia/Pontianak", country:"Indonesia", city:"Pontianak"},
+      {zone:"Asia/Pyongyang", country:"North Korea", city:"Pyongyang"},
+      {zone:"Asia/Qatar", country:"Qatar", city:"Qatar"},
+      {zone:"Asia/Qostanay", country:"Kazakhstan", city:"Qostanay"},
+      {zone:"Asia/Qyzylorda", country:"Kazakhstan", city:"Qyzylorda"},
+      {zone:"Asia/Riyadh", country:"Saudi Arabia", city:"Riyadh"},
+      {zone:"Asia/Sakhalin", country:"Russia", city:"Sakhalin"},
+      {zone:"Asia/Samarkand", country:"Uzbekistan", city:"Samarkand"},
+      {zone:"Asia/Seoul", country:"South Korea", city:"Seoul"},
+      {zone:"Asia/Shanghai", country:"China", city:"Shanghai"},
+      {zone:"Asia/Singapore", country:"Singapore", city:"Singapore"},
+      {zone:"Asia/Srednekolymsk", country:"Russia", city:"Srednekolymsk"},
+      {zone:"Asia/Taipei", country:"Taiwan", city:"Taipei"},
+      {zone:"Asia/Tashkent", country:"Uzbekistan", city:"Tashkent"},
+      {zone:"Asia/Tbilisi", country:"Georgia", city:"Tbilisi"},
+      {zone:"Asia/Tehran", country:"Iran", city:"Tehran"},
+      {zone:"Asia/Thimphu", country:"Bhutan", city:"Thimphu"},
+      {zone:"Asia/Tokyo", country:"Japan", city:"Tokyo"},
+      {zone:"Asia/Tomsk", country:"Russia", city:"Tomsk"},
+      {zone:"Asia/Ulaanbaatar", country:"Mongolia", city:"Ulaanbaatar"},
+      {zone:"Asia/Urumqi", country:"China", city:"Urumqi"},
+      {zone:"Asia/Ust-Nera", country:"Russia", city:"Ust-Nera"},
+      {zone:"Asia/Vientiane", country:"Laos", city:"Vientiane"},
+      {zone:"Asia/Vladivostok", country:"Russia", city:"Vladivostok"},
+      {zone:"Asia/Yakutsk", country:"Russia", city:"Yakutsk"},
+      {zone:"Asia/Yangon", country:"Myanmar", city:"Yangon"},
+      {zone:"Asia/Yekaterinburg", country:"Russia", city:"Yekaterinburg"},
+      {zone:"Asia/Yerevan", country:"Armenia", city:"Yerevan"},
+      // Europe
+      {zone:"Europe/Amsterdam", country:"Netherlands", city:"Amsterdam"},
+      {zone:"Europe/Andorra", country:"Andorra", city:"Andorra"},
+      {zone:"Europe/Astrakhan", country:"Russia", city:"Astrakhan"},
+      {zone:"Europe/Athens", country:"Greece", city:"Athens"},
+      {zone:"Europe/Belgrade", country:"Serbia", city:"Belgrade"},
+      {zone:"Europe/Berlin", country:"Germany", city:"Berlin"},
+      {zone:"Europe/Brussels", country:"Belgium", city:"Brussels"},
+      {zone:"Europe/Bucharest", country:"Romania", city:"Bucharest"},
+      {zone:"Europe/Budapest", country:"Hungary", city:"Budapest"},
+      {zone:"Europe/Chisinau", country:"Moldova", city:"Chisinau"},
+      {zone:"Europe/Copenhagen", country:"Denmark", city:"Copenhagen"},
+      {zone:"Europe/Dublin", country:"Ireland", city:"Dublin"},
+      {zone:"Europe/Gibraltar", country:"Gibraltar", city:"Gibraltar"},
+      {zone:"Europe/Helsinki", country:"Finland", city:"Helsinki"},
+      {zone:"Europe/Istanbul", country:"Turkey", city:"Istanbul"},
+      {zone:"Europe/Kaliningrad", country:"Russia", city:"Kaliningrad"},
+      {zone:"Europe/Kiev", country:"Ukraine", city:"Kiev"},
+      {zone:"Europe/Kirov", country:"Russia", city:"Kirov"},
+      {zone:"Europe/Lisbon", country:"Portugal", city:"Lisbon"},
+      {zone:"Europe/Ljubljana", country:"Slovenia", city:"Ljubljana"},
+      {zone:"Europe/London", country:"United Kingdom", city:"London"},
+      {zone:"Europe/Luxembourg", country:"Luxembourg", city:"Luxembourg"},
+      {zone:"Europe/Madrid", country:"Spain", city:"Madrid"},
+      {zone:"Europe/Malta", country:"Malta", city:"Malta"},
+      {zone:"Europe/Minsk", country:"Belarus", city:"Minsk"},
+      {zone:"Europe/Monaco", country:"Monaco", city:"Monaco"},
+      {zone:"Europe/Moscow", country:"Russia", city:"Moscow"},
+      {zone:"Europe/Oslo", country:"Norway", city:"Oslo"},
+      {zone:"Europe/Paris", country:"France", city:"Paris"},
+      {zone:"Europe/Prague", country:"Czech Republic", city:"Prague"},
+      {zone:"Europe/Riga", country:"Latvia", city:"Riga"},
+      {zone:"Europe/Rome", country:"Italy", city:"Rome"},
+      {zone:"Europe/Samara", country:"Russia", city:"Samara"},
+      {zone:"Europe/Saratov", country:"Russia", city:"Saratov"},
+      {zone:"Europe/Simferopol", country:"Ukraine", city:"Simferopol"},
+      {zone:"Europe/Sofia", country:"Bulgaria", city:"Sofia"},
+      {zone:"Europe/Stockholm", country:"Sweden", city:"Stockholm"},
+      {zone:"Europe/Tallinn", country:"Estonia", city:"Tallinn"},
+      {zone:"Europe/Tirane", country:"Albania", city:"Tirane"},
+      {zone:"Europe/Ulyanovsk", country:"Russia", city:"Ulyanovsk"},
+      {zone:"Europe/Uzhgorod", country:"Ukraine", city:"Uzhgorod"},
+      {zone:"Europe/Vienna", country:"Austria", city:"Vienna"},
+      {zone:"Europe/Vilnius", country:"Lithuania", city:"Vilnius"},
+      {zone:"Europe/Volgograd", country:"Russia", city:"Volgograd"},
+      {zone:"Europe/Warsaw", country:"Poland", city:"Warsaw"},
+      {zone:"Europe/Zaporozhye", country:"Ukraine", city:"Zaporozhye"},
+      {zone:"Europe/Zurich", country:"Switzerland", city:"Zurich"},
+      // Indian Ocean
+      {zone:"Indian/Chagos", country:"British Indian Ocean Territory", city:"Chagos"},
+      {zone:"Indian/Christmas", country:"Christmas Island", city:"Christmas"},
+      {zone:"Indian/Cocos", country:"Cocos Islands", city:"Cocos"},
+      {zone:"Indian/Kerguelen", country:"Kerguelen Islands", city:"Kerguelen"},
+      {zone:"Indian/Mahe", country:"Seychelles", city:"Mahe"},
+      {zone:"Indian/Maldives", country:"Maldives", city:"Maldives"},
+      {zone:"Indian/Mauritius", country:"Mauritius", city:"Mauritius"},
+      {zone:"Indian/Reunion", country:"Réunion", city:"Reunion"},
+      // Pacific
+      {zone:"Pacific/Apia", country:"Samoa", city:"Apia"},
+      {zone:"Pacific/Auckland", country:"New Zealand", city:"Auckland"},
+      {zone:"Pacific/Chatham", country:"New Zealand", city:"Chatham"},
+      {zone:"Pacific/Enderbury", country:"Phoenix Islands", city:"Enderbury"},
+      {zone:"Pacific/Fakaofo", country:"Tokelau", city:"Fakaofo"},
+      {zone:"Pacific/Fiji", country:"Fiji", city:"Fiji"},
+      {zone:"Pacific/Funafuti", country:"Tuvalu", city:"Funafuti"},
+      {zone:"Pacific/Galapagos", country:"Ecuador", city:"Galapagos"},
+      {zone:"Pacific/Gambier", country:"French Polynesia", city:"Gambier"},
+      {zone:"Pacific/Guadalcanal", country:"Solomon Islands", city:"Guadalcanal"},
+      {zone:"Pacific/Guam", country:"Guam", city:"Guam"},
+      {zone:"Pacific/Honolulu", country:"USA", city:"Honolulu"},
+      {zone:"Pacific/Johnston", country:"USA", city:"Johnston"},
+      {zone:"Pacific/Kiritimati", country:"Kiribati", city:"Kiritimati"},
+      {zone:"Pacific/Kosrae", country:"Micronesia", city:"Kosrae"},
+      {zone:"Pacific/Kwajalein", country:"Marshall Islands", city:"Kwajalein"},
+      {zone:"Pacific/Majuro", country:"Marshall Islands", city:"Majuro"},
+      {zone:"Pacific/Marquesas", country:"French Polynesia", city:"Marquesas"},
+      {zone:"Pacific/Midway", country:"USA", city:"Midway"},
+      {zone:"Pacific/Nauru", country:"Nauru", city:"Nauru"},
+      {zone:"Pacific/Niue", country:"Niue", city:"Niue"},
+      {zone:"Pacific/Norfolk", country:"Norfolk Island", city:"Norfolk"},
+      {zone:"Pacific/Noumea", country:"New Caledonia", city:"Noumea"},
+      {zone:"Pacific/Pago_Pago", country:"American Samoa", city:"Pago Pago"},
+      {zone:"Pacific/Palau", country:"Palau", city:"Palau"},
+      {zone:"Pacific/Pitcairn", country:"Pitcairn Islands", city:"Pitcairn"},
+      {zone:"Pacific/Pohnpei", country:"Micronesia", city:"Pohnpei"},
+      {zone:"Pacific/Port_Moresby", country:"Papua New Guinea", city:"Port Moresby"},
+      {zone:"Pacific/Rarotonga", country:"Cook Islands", city:"Rarotonga"},
+      {zone:"Pacific/Saipan", country:"Northern Mariana Islands", city:"Saipan"},
+      {zone:"Pacific/Tahiti", country:"French Polynesia", city:"Tahiti"},
+      {zone:"Pacific/Tarawa", country:"Kiribati", city:"Tarawa"},
+      {zone:"Pacific/Tongatapu", country:"Tonga", city:"Tongatapu"},
+      {zone:"Pacific/Wake", country:"Wake Island", city:"Wake"},
+      {zone:"Pacific/Wallis", country:"Wallis and Futuna", city:"Wallis"}
+    ];
+    
+    // Elements
+    const clocksContainer = document.getElementById("clocks-container");
+    const searchInput = document.getElementById("search-input");
+    const settingsToggle = document.getElementById("settings-toggle");
+    const settingsPanel = document.getElementById("settings-panel");
+    const toggle12h = document.getElementById("toggle-12h");
+    const toggleAnalog = document.getElementById("toggle-analog");
+    const soundToggle = document.getElementById("sound-toggle");
+    
+    // LocalStorage keys
+    const STORAGE_KEY_12H = "hallofclocks_12h_format";
+    const STORAGE_KEY_ANALOG = "hallofclocks_analog";
+    
+    // States
+    let is12HourFormat = JSON.parse(localStorage.getItem(STORAGE_KEY_12H)) || false;
+    let isAnalogClock = JSON.parse(localStorage.getItem(STORAGE_KEY_ANALOG)) || false;
+    let clocksIntervals = [];
+    let isSoundOn = false;
+    let audioCtx, oscillator;
+    
+    // Initialize UI states
+    toggle12h.checked = is12HourFormat;
+    toggleAnalog.checked = isAnalogClock;
+    
+    // Highlight search matches
+    function highlightText(text, query) {
+      if (!query) return text;
+      const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, "gi");
+      return text.replace(regex, '<span class="highlight">$1</span>');
+    }
+    
+    // Create digital clock element
+    function createDigitalClock(zone, is12h) {
+      const el = document.createElement("div");
+      el.className = "digital-clock";
+      function update() {
+        try {
+          const now = new Date();
+          const options = {
+            timeZone: zone,
+            hour12: is12h,
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+          };
+          const formatter = new Intl.DateTimeFormat([], options);
+          el.textContent = formatter.format(now);
+        } catch {
+          el.textContent = "N/A";
         }
       }
-      function stopSound() {
-        if (oscillator) {
-          oscillator.stop();
-          oscillator.disconnect();
-          oscillator = null;
-        }
-      }
-      soundBtn.addEventListener('click', () => {
-        if (soundEnabled) {
-          stopSound();
-          soundBtn.textContent = "🔈 Sound Off";
-          soundBtn.setAttribute('aria-pressed', 'false');
-        } else {
-          if (audioContext.state === 'suspended') {
-            audioContext.resume();
+      update();
+      const interval = setInterval(update, 1000);
+      return { el, interval };
+    }
+    
+    // Create analog clock canvas element
+    function createAnalogClock(zone, is12h) {
+      const canvas = document.createElement("canvas");
+      canvas.className = "clock-canvas";
+      canvas.width = 130;
+      canvas.height = 130;
+      const ctx = canvas.getContext("2d");
+    
+      function drawClock() {
+        const now = new Date();
+        try {
+          const parts = new Intl.DateTimeFormat("en-US", {
+            timeZone: zone,
+            hour12: is12h,
+            hour: "numeric",
+            minute: "numeric",
+            second: "numeric",
+          }).formatToParts(now);
+          
+          let h = 0, m = 0, s = 0;
+          for (const part of parts) {
+            if (part.type === "hour") h = parseInt(part.value);
+            if (part.type === "minute") m = parseInt(part.value);
+            if (part.type === "second") s = parseInt(part.value);
           }
-          startSound();
-          soundBtn.textContent = "🔊 Sound On";
-          soundBtn.setAttribute('aria-pressed', 'true');
+          
+          // Clear canvas
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+          // Draw background circle
+          ctx.beginPath();
+          ctx.arc(65, 65, 60, 0, Math.PI * 2);
+          ctx.fillStyle = "#001824";
+          ctx.fill();
+    
+          // Draw clock outline
+          ctx.lineWidth = 5;
+          ctx.strokeStyle = "#00d7ff";
+          ctx.shadowColor = "#00d7ffbb";
+          ctx.shadowBlur = 12;
+          ctx.beginPath();
+          ctx.arc(65, 65, 60, 0, Math.PI * 2);
+          ctx.stroke();
+    
+          ctx.shadowBlur = 0;
+    
+          // Center
+          ctx.translate(65, 65);
+    
+          // Draw hour marks
+          ctx.strokeStyle = "#007ba7";
+          ctx.lineWidth = 3;
+          for (let i = 0; i < 12; i++) {
+            ctx.beginPath();
+            ctx.moveTo(50, 0);
+            ctx.lineTo(58, 0);
+            ctx.stroke();
+            ctx.rotate(Math.PI / 6);
+          }
+    
+          // Reset rotation
+          ctx.rotate(-((Math.PI / 6) * 12));
+    
+          // Draw hands
+          const secAngle = (Math.PI / 30) * s;
+          const minAngle = (Math.PI / 30) * m + secAngle / 60;
+          let hourValue = h;
+          if (!is12h && hourValue >= 12) hourValue -= 12;
+          const hourAngle = (Math.PI / 6) * hourValue + minAngle / 12;
+    
+          // Hour hand
+          ctx.strokeStyle = "#00d7ff";
+          ctx.lineWidth = 6;
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.lineTo(Math.cos(hourAngle - Math.PI / 2) * 35, Math.sin(hourAngle - Math.PI / 2) * 35);
+          ctx.stroke();
+    
+          // Minute hand
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.lineTo(Math.cos(minAngle - Math.PI / 2) * 50, Math.sin(minAngle - Math.PI / 2) * 50);
+          ctx.stroke();
+    
+          // Second hand
+          ctx.strokeStyle = "#ff4c4c";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(0, 10);
+          ctx.lineTo(Math.cos(secAngle - Math.PI / 2) * 55, Math.sin(secAngle - Math.PI / 2) * 55);
+          ctx.stroke();
+    
+          // Center circle
+          ctx.fillStyle = "#00d7ff";
+          ctx.beginPath();
+          ctx.arc(0, 0, 7, 0, Math.PI * 2);
+          ctx.fill();
+    
+          ctx.resetTransform();
+        } catch {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = "#ff4c4c";
+          ctx.font = "14px monospace";
+          ctx.textAlign = "center";
+          ctx.fillText("Error", 65, 65);
         }
-        soundEnabled = !soundEnabled;
-      });
-
-      // Scroll to top button logic
-      const topBtn = document.getElementById("top-button");
-      topBtn.addEventListener("click", () => {
-        scroll.scrollTo(0);
-        document.getElementById("search").focus();
-      });
-
-      // Cookie consent
-      const cookieConsent = document.getElementById('cookie-consent');
-      const cookieAcceptBtn = document.getElementById('cookie-accept');
-      const cookieAccepted = localStorage.getItem('cookieAccepted');
-      if (!cookieAccepted) {
-        cookieConsent.style.display = 'block';
       }
-      cookieAcceptBtn.addEventListener('click', () => {
-        localStorage.setItem('cookieAccepted', 'true');
-        cookieConsent.style.display = 'none';
-      });
-
-      // Timezone data from IANA
-      // We'll use a curated list of main timezones with country/city names and UTC offsets
-      // Source: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
-      const timezones = [
-        {zone: "Pacific/Midway", country:"United States", city:"Midway Atoll"},
-        {zone: "Pacific/Honolulu", country:"United States", city:"Honolulu"},
-        {zone: "America/Anchorage", country:"United States", city:"Anchorage"},
-        {zone: "America/Los_Angeles", country:"United States", city:"Los Angeles"},
-        {zone: "America/Denver", country:"United States", city:"Denver"},
-        {zone: "America/Chicago", country:"United States", city:"Chicago"},
-        {zone: "America/New_York", country:"United States", city:"New York"},
-        {zone: "America/Caracas", country:"Venezuela", city:"Caracas"},
-        {zone: "America/Sao_Paulo", country:"Brazil", city:"São Paulo"},
-        {zone: "Atlantic/Azores", country:"Portugal", city:"Azores"},
-        {zone: "Europe/London", country:"United Kingdom", city:"London"},
-        {zone: "Europe/Paris", country:"France", city:"Paris"},
-        {zone: "Europe/Berlin", country:"Germany", city:"Berlin"},
-        {zone: "Europe/Moscow", country:"Russia", city:"Moscow"},
-        {zone: "Asia/Dubai", country:"United Arab Emirates", city:"Dubai"},
-        {zone: "Asia/Kolkata", country:"India", city:"Kolkata"},
-        {zone: "Asia/Singapore", country:"Singapore", city:"Singapore"},
-        {zone: "Asia/Tokyo", country:"Japan", city:"Tokyo"},
-        {zone: "Australia/Sydney", country:"Australia", city:"Sydney"},
-        {zone: "Pacific/Auckland", country:"New Zealand", city:"Auckland"},
-        {zone: "Pacific/Fiji", country:"Fiji", city:"Fiji"},
-        {zone: "Pacific/Tongatapu", country:"Tonga", city:"Tongatapu"},
-      ];
-
-      // Create clock cards in grid
-      const clocksGrid = document.getElementById('clocks');
-      function pad(n) {
-        return n < 10 ? '0'+n : n;
-      }
-
-      function createClockCard(tz) {
-        const card = document.createElement('article');
-        card.classList.add('clock-card');
-        card.setAttribute('role', 'listitem');
+      drawClock();
+      const interval = setInterval(drawClock, 1000);
+      return { el: canvas, interval };
+    }
+    
+    // Render clocks
+    function renderClocks(data, filter = "") {
+      // Clear old clocks and intervals
+      clocksIntervals.forEach(i => clearInterval(i));
+      clocksIntervals = [];
+      clocksContainer.innerHTML = "";
+      filter = filter.toLowerCase();
+    
+      data.forEach(({zone, country, city}, idx) => {
+        if (filter) {
+          // Filter by city, country, or zone
+          if (!zone.toLowerCase().includes(filter) &&
+              !country.toLowerCase().includes(filter) &&
+              !city.toLowerCase().includes(filter)) return;
+        }
+    
+        const card = document.createElement("article");
+        card.className = "clock-card";
         card.tabIndex = 0;
-
-        // Country/City label
-        const label = document.createElement('div');
-        label.className = 'clock-country';
-        label.textContent = `${tz.city}, ${tz.country}`;
-        card.appendChild(label);
-
-        // Digital time display
-        const timeDisplay = document.createElement('div');
-        timeDisplay.className = 'clock-time';
-        timeDisplay.setAttribute('aria-live', 'off');
-        timeDisplay.setAttribute('aria-atomic', 'true');
-        timeDisplay.textContent = '00:00:00';
-        card.appendChild(timeDisplay);
-
-        // Attach timezone data
-        card.dataset.zone = tz.zone;
-        card.dataset.city = tz.city.toLowerCase();
-        card.dataset.country = tz.country.toLowerCase();
-
-        // Update time every second
-        function updateTime() {
-          const now = new Date();
-          try {
-            const options = {
-              timeZone: tz.zone,
-              hour12: false,
-              hour: '2-digit',
-              minute: '2-digit',
-              second: '2-digit',
-            };
-            const formatter = new Intl.DateTimeFormat([], options);
-            timeDisplay.textContent = formatter.format(now);
-          } catch(e) {
-            timeDisplay.textContent = 'Error';
-          }
-        }
-        updateTime();
-        setInterval(updateTime, 1000);
-
-        return card;
+        card.setAttribute("role", "listitem");
+        card.setAttribute("aria-label", `${city}, ${country} clock`);
+    
+        // Location
+        const loc = document.createElement("div");
+        loc.className = "location";
+        loc.innerHTML = highlightText(city, filter);
+        card.appendChild(loc);
+    
+        // Country
+        const ctry = document.createElement("div");
+        ctry.className = "country";
+        ctry.innerHTML = highlightText(country, filter);
+        card.appendChild(ctry);
+    
+        // Time display
+        let clockObj;
+        if (isAnalogClock) clockObj = createAnalogClock(zone, is12HourFormat);
+        else clockObj = createDigitalClock(zone, is12HourFormat);
+        card.appendChild(clockObj.el);
+        clocksIntervals.push(clockObj.interval);
+    
+        // Timezone label
+        const tzLabel = document.createElement("div");
+        tzLabel.className = "timezone-label";
+        tzLabel.textContent = zone.replace("_", " ");
+        card.appendChild(tzLabel);
+    
+        clocksContainer.appendChild(card);
+      });
+    }
+    
+    // Search filtering
+    searchInput.addEventListener("input", () => {
+      renderClocks(timezones, searchInput.value.trim());
+    });
+    
+    // Settings toggle
+    settingsToggle.addEventListener("click", () => {
+      const isVisible = settingsPanel.style.display === "block";
+      settingsPanel.style.display = isVisible ? "none" : "block";
+      settingsToggle.setAttribute("aria-expanded", isVisible ? "false" : "true");
+      if (!isVisible) settingsPanel.focus();
+    });
+    
+    // Settings checkboxes
+    toggle12h.addEventListener("change", () => {
+      is12HourFormat = toggle12h.checked;
+      localStorage.setItem(STORAGE_KEY_12H, JSON.stringify(is12HourFormat));
+      renderClocks(timezones, searchInput.value.trim());
+    });
+    toggleAnalog.addEventListener("change", () => {
+      isAnalogClock = toggleAnalog.checked;
+      localStorage.setItem(STORAGE_KEY_ANALOG, JSON.stringify(isAnalogClock));
+      renderClocks(timezones, searchInput.value.trim());
+    });
+    
+    // Sound toggle
+    soundToggle.addEventListener("click", () => {
+      if (isSoundOn) {
+        stopSound();
+      } else {
+        startSound();
       }
-
-      // Populate clocks
-      timezones.forEach(tz => {
-        clocksGrid.appendChild(createClockCard(tz));
-      });
-
-      // Search filtering
-      const searchInput = document.getElementById('search');
-      searchInput.addEventListener('input', e => {
-        const query = e.target.value.trim().toLowerCase();
-        const allClocks = clocksGrid.querySelectorAll('.clock-card');
-        let visibleCount = 0;
-        allClocks.forEach(card => {
-          const city = card.dataset.city;
-          const country = card.dataset.country;
-          if(city.includes(query) || country.includes(query)) {
-            card.style.display = 'block';
-            visibleCount++;
-          } else {
-            card.style.display = 'none';
-          }
-        });
-        if (visibleCount === 0) {
-          clocksGrid.innerHTML = `<p style="color:#ffcc77; text-align:center; font-weight:700; font-size:1.2rem; user-select:none;">No results for "<em>${query}</em>"</p>`;
-        } else {
-          // Re-add clocks if previously replaced
-          if(clocksGrid.querySelector('p')) {
-            clocksGrid.innerHTML = '';
-            timezones.forEach(tz => {
-              clocksGrid.appendChild(createClockCard(tz));
-            });
-            // Re-run filter to keep consistent
-            searchInput.dispatchEvent(new Event('input'));
-          }
-        }
-      });
-
-      // Three.js starfield background
-      function createStarField() {
-        const canvas = document.getElementById('bg');
-        const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setClearColor(0x000000, 0);
-
-        const scene = new THREE.Scene();
-
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-        camera.position.z = 5;
-
-        // Create stars
-        const starsGeometry = new THREE.BufferGeometry();
-        const starCount = 1000;
-        const positions = [];
-        for(let i=0; i<starCount; i++) {
-          positions.push((Math.random()-0.5)*200);
-          positions.push((Math.random()-0.5)*200);
-          positions.push((Math.random()-0.5)*200);
-        }
-        starsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-
-        const starsMaterial = new THREE.PointsMaterial({ color: 0xaadfff, size: 0.4, sizeAttenuation: true, opacity: 0.8, transparent: true });
-        const starField = new THREE.Points(starsGeometry, starsMaterial);
-        scene.add(starField);
-
-        function animate() {
-          requestAnimationFrame(animate);
-          starField.rotation.y += 0.0006;
-          starField.rotation.x += 0.0003;
-          renderer.render(scene, camera);
-        }
-        animate();
-
-        window.addEventListener('resize', () => {
-          renderer.setSize(window.innerWidth, window.innerHeight);
-          camera.aspect = window.innerWidth/window.innerHeight;
-          camera.updateProjectionMatrix();
-        });
-      }
-      createStarField();
-
-      // Accessibility helper - visually hidden class
-      const styleVisuallyHidden = document.createElement('style');
-      styleVisuallyHidden.textContent = `
-        .visually-hidden {
-          position: absolute !important;
-          height: 1px; width: 1px;
-          overflow: hidden;
-          clip: rect(1px, 1px, 1px, 1px);
-          clip-path: inset(50%);
-          white-space: nowrap;
-          border: 0;
-          padding: 0;
-          margin: -1px;
-        }
-      `;
-      document.head.appendChild(styleVisuallyHidden);
-
-      // Easter egg: Konami code to toggle all clocks to 24h / 12h toggle
-      const konamiCode = [38,38,40,40,37,39,37,39,66,65];
-      let konamiIndex = 0;
-      let use24h = true;
-      window.addEventListener('keydown', e => {
-        if (e.keyCode === konamiCode[konamiIndex]) {
-          konamiIndex++;
-          if (konamiIndex === konamiCode.length) {
-            konamiIndex = 0;
-            use24h = !use24h;
-            // Update all clocks format
-            clocksGrid.querySelectorAll('.clock-card').forEach(card => {
-              const tz = timezones.find(tz => tz.city.toLowerCase() === card.dataset.city && tz.country.toLowerCase() === card.dataset.country);
-              if (!tz) return;
-              const timeDisplay = card.querySelector('.clock-time');
-              if (use24h) {
-                timeDisplay.dataset.format = '24h';
-              } else {
-                timeDisplay.dataset.format = '12h';
-              }
-            });
-            alert(`Konami Code Activated! Time format switched to ${use24h ? '24-hour' : '12-hour'} mode.`);
-          }
-        } else {
-          konamiIndex = 0;
-        }
-      });
-
-      // Update time with 12h or 24h format toggle support
-      clocksGrid.querySelectorAll('.clock-card').forEach(card => {
-        const tz = timezones.find(tz => tz.city.toLowerCase() === card.dataset.city && tz.country.toLowerCase() === card.dataset.country);
-        if (!tz) return;
-        const timeDisplay = card.querySelector('.clock-time');
-        timeDisplay.dataset.format = '24h';
-        function updateTime() {
-          const now = new Date();
-          try {
-            const options = {
-              timeZone: tz.zone,
-              hour12: timeDisplay.dataset.format === '12h',
-              hour: '2-digit',
-              minute: '2-digit',
-              second: '2-digit',
-            };
-            const formatter = new Intl.DateTimeFormat([], options);
-            timeDisplay.textContent = formatter.format(now);
-          } catch(e) {
-            timeDisplay.textContent = 'Error';
-          }
-        }
-        updateTime();
-        setInterval(updateTime, 1000);
-      });
-
-    }); // end DOMContentLoaded
+    });
+    
+    function startSound() {
+      if (isSoundOn) return;
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      oscillator = audioCtx.createOscillator();
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(440, audioCtx.currentTime);
+      oscillator.start();
+      const gainNode = audioCtx.createGain();
+      gainNode.gain.setValueAtTime(0.03, audioCtx.currentTime);
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      isSoundOn = true;
+      soundToggle.textContent = "🔊 Sound On";
+      soundToggle.setAttribute("aria-pressed", "true");
+    }
+    
+    function stopSound() {
+      if (!audioCtx) return;
+      oscillator.stop();
+      oscillator.disconnect();
+      audioCtx.close();
+      audioCtx = null;
+      isSoundOn = false;
+      soundToggle.textContent = "🔈 Sound Off";
+      soundToggle.setAttribute("aria-pressed", "false");
+    }
+    
+    // Custom cursor movement
+    const cursor = document.querySelector(".custom-cursor");
+    window.addEventListener("mousemove", e => {
+      cursor.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0) translate(-50%, -50%)`;
+    });
+    
+    // Preloader & initial render
+    window.addEventListener("load", () => {
+      const loader = document.querySelector(".loader");
+      loader.style.opacity = "0";
+      setTimeout(() => loader.style.display = "none", 600);
+      renderClocks(timezones);
+    });
+    
+    // GSAP & Locomotive Scroll integration
+    const scrollContainer = document.querySelector("[data-scroll-container]");
+    const locoScroll = new LocomotiveScroll({
+      el: scrollContainer,
+      smooth: true,
+      smartphone: { smooth: true },
+      tablet: { smooth: true },
+      getDirection: true,
+      getSpeed: true,
+    });
+    locoScroll.on("scroll", ScrollTrigger.update);
+    
+    ScrollTrigger.scrollerProxy(scrollContainer, {
+      scrollTop(value) {
+        return arguments.length
+          ? locoScroll.scrollTo(value, 0, 0)
+          : locoScroll.scroll.instance.scroll.y;
+      },
+      getBoundingClientRect() {
+        return { top: 0, left: 0, width: window.innerWidth, height: window.innerHeight };
+      },
+      pinType: scrollContainer.style.transform ? "transform" : "fixed",
+    });
+    
+    ScrollTrigger.addEventListener("refresh", () => locoScroll.update());
+    ScrollTrigger.refresh();
+    
+    // Animate header and clocks on load
+    gsap.from("header h1", { opacity: 0, y: -20, duration: 1.2, ease: "power3.out" });
+    gsap.from("#search-input", { opacity: 0, y: -20, duration: 1.2, delay: 0.15, ease: "power3.out" });
+    gsap.from("#settings-toggle", { opacity: 0, y: -20, duration: 1.2, delay: 0.3, ease: "power3.out" });
+    gsap.from("#clocks-container", { opacity: 0, y: 20, duration: 1.8, delay: 0.5, ease: "power3.out", stagger: 0.03 });
+    
+    // Animated tab title (cycles through)
+    const titles = ["Hall of Clocks", "Every Timezone", "World Clock Hub"];
+    let titleIndex = 0;
+    setInterval(() => {
+      document.title = titles[titleIndex];
+      titleIndex = (titleIndex + 1) % titles.length;
+    }, 3000);
   </script>
 </body>
 </html>
