@@ -1,149 +1,91 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Hall of Clocks - Worldwide Timezones</title>
   <link rel="icon" href="favicon.ico" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/locomotive-scroll@4.1.4/dist/locomotive-scroll.min.css"/>
 
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet" />
-
-  <!-- GSAP + ScrollTrigger -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-
-  <!-- Locomotive Scroll -->
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/locomotive-scroll@4.1.4/dist/locomotive-scroll.min.css"
-  />
   <script src="https://cdn.jsdelivr.net/npm/locomotive-scroll@4.1.4/dist/locomotive-scroll.min.js"></script>
 
   <style>
-    /* Reset & Base */
-    * {
-      box-sizing: border-box;
-    }
+    :root { --accent-color: #0ff; }
+    * { box-sizing: border-box; }
     html, body {
-      margin: 0; padding: 0;
+      margin: 0;
       background: #000;
-      color: var(--accent-color, #0ff);
+      color: var(--accent-color);
       font-family: 'Inter', sans-serif;
       overflow-x: hidden;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      height: 100%;
       scroll-behavior: smooth;
     }
-
-    /* CSS Variable for accent color */
-    :root {
-      --accent-color: #0ff;
-    }
-
-    /* Loader */
     .loader {
       position: fixed;
       inset: 0;
       background: #111;
-      color: var(--accent-color);
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
       font-size: 2rem;
-      font-weight: 700;
+      font-weight: bold;
+      color: var(--accent-color);
       z-index: 9999;
-      user-select: none;
-      letter-spacing: 2px;
     }
-
-    /* Custom cursor */
     .custom-cursor {
       position: fixed;
-      top: 0; left: 0;
-      width: 20px; height: 20px;
-      background: var(--accent-color);
+      width: 20px;
+      height: 20px;
       border-radius: 50%;
+      background: var(--accent-color);
       pointer-events: none;
+      transform: translate(-50%,-50%);
       mix-blend-mode: difference;
-      transition: transform 0.15s ease;
+      transition: transform 0.2s ease;
       z-index: 10000;
-      transform-origin: center center;
     }
-
-    /* Header & Search */
     header {
       position: sticky;
       top: 0;
       background: #111;
-      padding: 1rem 2rem;
-      z-index: 50;
       border-bottom: 1px solid var(--accent-color);
+      padding: 1rem 2rem;
+      z-index: 100;
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      justify-content: space-between;
       gap: 1rem;
     }
-
     header h1 {
       margin: 0;
-      font-weight: 700;
       font-size: 1.8rem;
-      user-select: none;
-      color: var(--accent-color);
-      letter-spacing: 0.05em;
+      flex: 1;
     }
-
     #search-input {
-      flex-grow: 1;
+      flex: 1 1 200px;
       min-width: 200px;
       max-width: 400px;
-      padding: 0.6rem 1rem;
-      font-size: 1rem;
+      background: #222;
       border: none;
       border-radius: 4px;
-      outline-offset: 2px;
-      outline-color: var(--accent-color);
-      background: #222;
       color: var(--accent-color);
-      transition: background 0.3s ease;
+      padding: 0.6rem;
     }
-    #search-input::placeholder {
-      color: var(--accent-color);
-      opacity: 0.6;
-    }
-    #search-input:focus {
-      background: #333;
-    }
-
-    /* Settings panel */
+    #search-input::placeholder { color: var(--accent-color); opacity: 0.5; }
     #settings-panel {
-      background: #111;
-      border: 1px solid var(--accent-color);
-      border-radius: 6px;
-      padding: 0.6rem 1rem;
       display: flex;
-      gap: 1.5rem;
-      align-items: center;
-      user-select: none;
       flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
     }
-
     #settings-panel label {
-      cursor: pointer;
       font-size: 0.9rem;
-      color: var(--accent-color);
       display: flex;
       align-items: center;
       gap: 0.4rem;
-    }
-    #settings-panel input[type="checkbox"] {
-      width: 16px;
-      height: 16px;
-      cursor: pointer;
-      accent-color: var(--accent-color);
     }
     #color-picker {
       width: 40px;
@@ -152,151 +94,92 @@
       cursor: pointer;
       border-radius: 4px;
     }
-
-    /* Main content wrapper with locomotive scroll container */
-    main[data-scroll-container] {
+    #clocks-container {
+      display: grid;
+      gap: 20px;
+      grid-template-columns: repeat(auto-fill, minmax(220px,1fr));
       padding: 2rem;
       max-width: 1400px;
       margin: 0 auto;
-      user-select: none;
     }
-
-    /* Clocks Grid */
-    #clocks-container {
-      margin-top: 2rem;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 20px;
-    }
-
     .clock {
       background: #111;
-      border-radius: 12px;
+      border-radius: 10px;
+      padding: 1rem;
       box-shadow: 0 0 10px var(--accent-color);
-      padding: 15px 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      transition: transform 0.25s ease, box-shadow 0.25s ease;
-      cursor: default;
+      transition: 0.3s ease;
     }
-    .clock:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 0 20px var(--accent-color);
-    }
+    .clock:hover { transform: translateY(-5px); }
     .clock h3 {
-      margin: 0 0 0.4rem 0;
-      font-weight: 700;
+      margin: 0;
       font-size: 1.2rem;
-      text-align: center;
-      color: var(--accent-color);
-      text-shadow: 0 0 8px var(--accent-color);
+      margin-bottom: 0.5rem;
     }
-
     .digital-time {
       font-family: monospace;
-      font-size: 1.5rem;
-      letter-spacing: 0.12em;
-      margin-bottom: 8px;
-      color: var(--accent-color);
-      user-select: text;
+      font-size: 1.4rem;
+      margin-bottom: 0.5rem;
     }
-
-    /* Analog clock canvas */
     .analog-clock {
       width: 150px;
       height: 150px;
       border-radius: 50%;
       background: #000;
-      box-shadow: 0 0 12px var(--accent-color) inset;
-      user-select: none;
     }
-
-    /* Back to top button */
     #back-to-top {
       position: fixed;
       bottom: 40px;
       right: 40px;
       background: var(--accent-color);
       color: #000;
-      font-weight: 700;
       border: none;
       border-radius: 50%;
       width: 50px;
       height: 50px;
-      cursor: pointer;
       opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-      box-shadow: 0 0 15px var(--accent-color);
+      cursor: pointer;
+      transition: 0.3s ease;
+      z-index: 1001;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 1.8rem;
-      z-index: 10001;
-      user-select: none;
     }
-    #back-to-top.visible {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    /* Responsive tweaks */
-    @media (max-width: 600px) {
-      #clocks-container {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-        gap: 15px;
-      }
-      .analog-clock {
-        width: 120px;
-        height: 120px;
-      }
-      .clock h3 {
-        font-size: 1rem;
-      }
-      .digital-time {
-        font-size: 1.2rem;
-      }
-      #settings-panel {
-        justify-content: center;
-      }
-    }
+    #back-to-top.visible { opacity: 1; }
   </style>
 </head>
 <body>
+  <div class="loader">Loading...</div>
+  <div class="custom-cursor"></div>
+  <header>
+    <h1>🌍 Hall of Clocks</h1>
+    <input id="search-input" type="search" placeholder="Search..." />
+    <div id="settings-panel">
+      <label><input type="checkbox" id="toggle-12h"/> 12h</label>
+      <label><input type="checkbox" id="toggle-analog" checked/> Analog</label>
+      <label>Color: <input type="color" id="color-picker" value="#0ff"/></label>
+    </div>
+  </header>
 
-<div class="loader" aria-live="polite" aria-busy="true">Loading clocks...</div>
-<div class="custom-cursor" aria-hidden="true"></div>
+  <main data-scroll-container>
+    <section id="clocks-container"></section>
+  </main>
+  <button id="back-to-top">↑</button>
 
-<header>
-  <h1>Hall of Clocks 🌍</h1>
-  <input
-    id="search-input"
-    type="search"
-    placeholder="Search city, country, or timezone..."
-    aria-label="Search clocks"
-    autocomplete="off"
-    spellcheck="false"
-  />
-  <div id="settings-panel" role="region" aria-label="Clock settings">
-    <label><input type="checkbox" id="toggle-12h" /> 12-Hour Format</label>
-    <label><input type="checkbox" id="toggle-analog" checked /> Show Analog Clocks</label>
-    <label>
-      Base Color:
-      <input type="color" id="color-picker" value="#00ffff" aria-label="Pick base accent color" />
-    </label>
-  </div>
-</header>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const clocksContainer = document.getElementById("clocks-container");
+      const searchInput = document.getElementById("search-input");
+      const toggle12h = document.getElementById("toggle-12h");
+      const toggleAnalog = document.getElementById("toggle-analog");
+      const colorPicker = document.getElementById("color-picker");
+      const loader = document.querySelector(".loader");
+      const backToTop = document.getElementById("back-to-top");
+      const cursor = document.querySelector(".custom-cursor");
 
-<main id="main-content" data-scroll-container>
-  <section id="clocks-container" aria-live="polite" aria-atomic="true"></section>
-</main>
-
-<button id="back-to-top" aria-label="Back to top" title="Back to top">↑</button>
-
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    // Insert your full dataset here:
     const timezones = [
       {zone:"Africa/Abidjan", country:"Côte d'Ivoire", city:"Abidjan"},
       {zone:"Africa/Accra", country:"Ghana", city:"Accra"},
@@ -680,230 +563,134 @@
       {zone:"Pacific/Wallis", country:"Wallis and Futuna", city:"Wallis"}
     ]
 
-    const clocksContainer = document.getElementById("clocks-container");
-    const searchInput = document.getElementById("search-input");
-    const toggle12h = document.getElementById("toggle-12h");
-    const toggleAnalog = document.getElementById("toggle-analog");
-    const loader = document.querySelector(".loader");
-    const cursor = document.querySelector(".custom-cursor");
-    const backToTopBtn = document.getElementById("back-to-top");
-    const colorPicker = document.getElementById("color-picker");
+      function formatTime(date, is12h) {
+        return date.toLocaleTimeString('en-US', {
+          hour12: is12h,
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        });
+      }
 
-    // Custom cursor movement
-    window.addEventListener("mousemove", e => {
-      cursor.style.left = e.clientX + "px";
-      cursor.style.top = e.clientY + "px";
-    });
-    // Cursor enlarge on hover for interactive elements
-    document.querySelectorAll("input, label, button").forEach(el => {
-      el.addEventListener("mouseenter", () => (cursor.style.transform = "scale(2)"));
-      el.addEventListener("mouseleave", () => (cursor.style.transform = "scale(1)"));
-    });
+      function createAnalog(date) {
+        const canvas = document.createElement("canvas");
+        canvas.width = 150;
+        canvas.height = 150;
+        const ctx = canvas.getContext("2d");
+        const r = 70;
+        ctx.translate(r+5,r+5);
 
-    // Format time helper
-    function formatTime(date, use12h) {
-      return date.toLocaleTimeString('en-US', {
-        hour12: use12h,
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      });
-    }
-
-    // Create analog clock canvas for a given date
-    function createAnalogClock(date) {
-      const canvas = document.createElement("canvas");
-      canvas.className = "analog-clock";
-      canvas.width = 150;
-      canvas.height = 150;
-      const ctx = canvas.getContext("2d");
-      const radius = 70;
-      ctx.translate(radius + 5, radius + 5);
-      ctx.clearRect(-radius - 5, -radius - 5, canvas.width, canvas.height);
-
-      // Circle face
-      ctx.fillStyle = "#000";
-      ctx.strokeStyle = "var(--accent-color)";
-      ctx.lineWidth = 6;
-      ctx.beginPath();
-      ctx.arc(0, 0, radius, 0, 2 * Math.PI);
-      ctx.fill();
-      ctx.stroke();
-
-      // Hour marks
-      ctx.lineWidth = 4;
-      ctx.strokeStyle = "var(--accent-color)";
-      for (let i = 0; i < 12; i++) {
-        const angle = (i * Math.PI) / 6;
+        ctx.fillStyle = "#000";
+        ctx.strokeStyle = "var(--accent-color)";
+        ctx.lineWidth = 5;
         ctx.beginPath();
-        ctx.moveTo(radius * 0.85 * Math.cos(angle), radius * 0.85 * Math.sin(angle));
-        ctx.lineTo(radius * Math.cos(angle), radius * Math.sin(angle));
+        ctx.arc(0,0,r,0,2*Math.PI);
+        ctx.fill();
         ctx.stroke();
-      }
 
-      // Hands
-      const hour = date.getHours() % 12;
-      const minute = date.getMinutes();
-      const second = date.getSeconds();
-
-      // Hour hand
-      ctx.strokeStyle = "var(--accent-color)";
-      ctx.lineWidth = 7;
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      const hourAngle = (hour + minute / 60) * (Math.PI / 6) - Math.PI / 2;
-      ctx.lineTo(Math.cos(hourAngle) * radius * 0.5, Math.sin(hourAngle) * radius * 0.5);
-      ctx.stroke();
-
-      // Minute hand
-      ctx.lineWidth = 5;
-      ctx.beginPath();
-      const minuteAngle = (minute + second / 60) * (Math.PI / 30) - Math.PI / 2;
-      ctx.moveTo(0, 0);
-      ctx.lineTo(Math.cos(minuteAngle) * radius * 0.75, Math.sin(minuteAngle) * radius * 0.75);
-      ctx.stroke();
-
-      // Second hand
-      ctx.strokeStyle = "#f00";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      const secondAngle = second * (Math.PI / 30) - Math.PI / 2;
-      ctx.moveTo(0, 0);
-      ctx.lineTo(Math.cos(secondAngle) * radius * 0.85, Math.sin(secondAngle) * radius * 0.85);
-      ctx.stroke();
-
-      ctx.translate(-radius - 5, -radius - 5);
-      return canvas;
-    }
-
-    // Render clocks
-    let intervalHandles = [];
-    function renderClocks(list) {
-      intervalHandles.forEach(clearInterval);
-      intervalHandles = [];
-      clocksContainer.innerHTML = "";
-
-      const use12h = toggle12h.checked;
-      const showAnalog = toggleAnalog.checked;
-
-      list.forEach(({ zone, country, city }) => {
-        const clockDiv = document.createElement("div");
-        clockDiv.className = "clock";
-        clockDiv.setAttribute("role", "article");
-        clockDiv.setAttribute("tabindex", "0");
-        clockDiv.setAttribute("aria-label", `${city}, ${country} time`);
-
-        const title = document.createElement("h3");
-        title.textContent = `${city}, ${country}`;
-        clockDiv.appendChild(title);
-
-        const digitalTime = document.createElement("div");
-        digitalTime.className = "digital-time";
-        clockDiv.appendChild(digitalTime);
-
-        let analogCanvas = null;
-        if (showAnalog) {
-          analogCanvas = createAnalogClock(new Date());
-          clockDiv.appendChild(analogCanvas);
+        ctx.fillStyle = "var(--accent-color)";
+        ctx.font = "12px Inter";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        for (let i=1;i<=12;i++){
+          let angle=(i*Math.PI/6)-Math.PI/2;
+          ctx.fillText(i,Math.cos(angle)*r*0.8,Math.sin(angle)*r*0.8);
         }
 
-        clocksContainer.appendChild(clockDiv);
+        const hour=date.getHours()%12,minute=date.getMinutes(),second=date.getSeconds();
+        const ha=((hour+minute/60)*Math.PI/6)-Math.PI/2;
+        const ma=((minute+second/60)*Math.PI/30)-Math.PI/2;
+        const sa=(second*Math.PI/30)-Math.PI/2;
 
-        // Update clock time
-        const updateClock = () => {
-          const now = new Date();
-          const timeStr = now.toLocaleString("en-US", { timeZone: zone });
-          const targetDate = new Date(timeStr);
+        ctx.lineWidth=7;
+        ctx.beginPath();
+        ctx.moveTo(0,0);
+        ctx.lineTo(Math.cos(ha)*r*0.5,Math.sin(ha)*r*0.5);
+        ctx.stroke();
 
-          digitalTime.textContent = formatTime(targetDate, use12h);
+        ctx.lineWidth=4;
+        ctx.beginPath();
+        ctx.moveTo(0,0);
+        ctx.lineTo(Math.cos(ma)*r*0.7,Math.sin(ma)*r*0.7);
+        ctx.stroke();
 
-          if (analogCanvas) {
-            const newCanvas = createAnalogClock(targetDate);
-            clockDiv.replaceChild(newCanvas, analogCanvas);
-            analogCanvas = newCanvas;
+        ctx.strokeStyle="red";
+        ctx.lineWidth=2;
+        ctx.beginPath();
+        ctx.moveTo(0,0);
+        ctx.lineTo(Math.cos(sa)*r*0.85,Math.sin(sa)*r*0.85);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.fillStyle="var(--accent-color)";
+        ctx.arc(0,0,4,0,2*Math.PI);
+        ctx.fill();
+        ctx.translate(-r-5,-r-5);
+        return canvas;
+      }
+
+      let intervals = [];
+      function render(list) {
+        intervals.forEach(clearInterval);
+        intervals=[];
+        clocksContainer.innerHTML="";
+        const is12h=toggle12h.checked, isAnalog=toggleAnalog.checked;
+        list.forEach(({zone,country,city})=>{
+          const div=document.createElement("div");
+          div.className="clock";
+          div.innerHTML=`<h3>${city}, ${country}</h3><div class="digital-time"></div>`;
+          let analog;
+          if(isAnalog){analog=createAnalog(new Date());div.appendChild(analog);}
+          clocksContainer.appendChild(div);
+          function update(){
+            const now=new Date();
+            const local=new Date(now.toLocaleString("en-US",{timeZone:zone}));
+            div.querySelector(".digital-time").textContent=formatTime(local,is12h);
+            if(isAnalog){
+              const newAnalog=createAnalog(local);
+              div.replaceChild(newAnalog,analog);
+              analog=newAnalog;
+            }
           }
-        };
-
-        updateClock();
-        intervalHandles.push(setInterval(updateClock, 1000));
-      });
-    }
-
-    // Initial render
-    renderClocks(timezones);
-
-    // Search filtering
-    searchInput.addEventListener("input", () => {
-      const query = searchInput.value.trim().toLowerCase();
-      if (!query) {
-        renderClocks(timezones);
-        return;
+          update();
+          intervals.push(setInterval(update,1000));
+        });
       }
-      const filtered = timezones.filter(({ zone, country, city }) =>
-        zone.toLowerCase().includes(query) ||
-        country.toLowerCase().includes(query) ||
-        city.toLowerCase().includes(query)
-      );
-      renderClocks(filtered);
-    });
+      render(timezones);
 
-    // Toggles rerender clocks
-    toggle12h.addEventListener("change", () => renderClocks(timezones));
-    toggleAnalog.addEventListener("change", () => renderClocks(timezones));
-
-    // Color picker changes accent color dynamically
-    colorPicker.addEventListener("input", e => {
-      document.documentElement.style.setProperty("--accent-color", e.target.value);
-    });
-
-    // GSAP animations
-    gsap.from("header h1", {
-      y: -30,
-      opacity: 0,
-      duration: 1,
-      ease: "power4.out"
-    });
-
-    // Initialize Locomotive Scroll
-    const scroll = new LocomotiveScroll({
-      el: document.querySelector("[data-scroll-container]"),
-      smooth: true,
-      multiplier: 1.2
-    });
-
-    // Hide loader after ready
-    window.setTimeout(() => {
-      gsap.to(".loader", {
-        y: "-100%",
-        duration: 1,
-        ease: "power4.inOut",
-        onComplete: () => {
-          document.querySelector(".loader").style.display = "none";
-          scroll.update();
-        }
+      searchInput.addEventListener("input",()=>{
+        const q=searchInput.value.toLowerCase();
+        if(!q)return render(timezones);
+        const filtered=timezones.filter(({city,country,zone})=>
+          city.toLowerCase().includes(q)||country.toLowerCase().includes(q)||zone.toLowerCase().includes(q)
+        );
+        render(filtered);
       });
-    }, 1500);
+      toggle12h.addEventListener("change",()=>render(timezones));
+      toggleAnalog.addEventListener("change",()=>render(timezones));
+      colorPicker.addEventListener("input",e=>{
+        document.documentElement.style.setProperty("--accent-color",e.target.value);
+      });
 
-    // Update Locomotive on resize
-    window.addEventListener("resize", () => {
-      scroll.update();
+      window.addEventListener("mousemove",e=>{
+        cursor.style.left=e.clientX+"px";
+        cursor.style.top=e.clientY+"px";
+      });
+      document.querySelectorAll("input,label,button").forEach(el=>{
+        el.addEventListener("mouseenter",()=>cursor.style.transform="scale(2)");
+        el.addEventListener("mouseleave",()=>cursor.style.transform="scale(1)");
+      });
+
+      const scroll=new LocomotiveScroll({el:document.querySelector("[data-scroll-container]"),smooth:true});
+      gsap.to(".loader",{y:"-100%",duration:1,delay:1,ease:"power4.inOut",onComplete:()=>{scroll.update();}});
+      window.addEventListener("resize",()=>scroll.update());
+
+      window.addEventListener("scroll",()=>{
+        if(window.scrollY>300)backToTop.classList.add("visible");
+        else backToTop.classList.remove("visible");
+      });
+      backToTop.addEventListener("click",()=>scroll.scrollTo(0,{duration:700}));
     });
-
-    // Back to top button logic
-    function handleScroll() {
-      if (window.scrollY > 300) {
-        backToTopBtn.classList.add("visible");
-      } else {
-        backToTopBtn.classList.remove("visible");
-      }
-    }
-    window.addEventListener("scroll", handleScroll);
-
-    backToTopBtn.addEventListener("click", () => {
-      scroll.scrollTo(0, { duration: 700 });
-    });
-  });
-</script>
-
+  </script>
 </body>
 </html>
