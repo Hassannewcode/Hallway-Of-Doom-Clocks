@@ -1,325 +1,244 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" >
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Hall of Clocks - Every Timezone, City & Country</title>
+  <title>Hall of Clocks - Worldwide Timezones</title>
   <link rel="icon" href="favicon.ico" />
-  
+
   <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet"/>
-  
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet" />
+
   <!-- GSAP + ScrollTrigger -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-  
+
   <!-- Locomotive Scroll -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/locomotive-scroll@4.1.4/dist/locomotive-scroll.min.css"/>
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/locomotive-scroll@4.1.4/dist/locomotive-scroll.min.css"
+  />
   <script src="https://cdn.jsdelivr.net/npm/locomotive-scroll@4.1.4/dist/locomotive-scroll.min.js"></script>
-  
+
   <style>
-    /* Reset & base */
-    *, *::before, *::after {
+    /* Reset & Base */
+    * {
       box-sizing: border-box;
     }
     html, body {
       margin: 0; padding: 0;
-      background: #0a111f;
-      color: #e0e6f1;
+      background: #000;
+      color: #fff;
       font-family: 'Inter', sans-serif;
       overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
       height: 100%;
     }
-    
+
     /* Loader */
     .loader {
       position: fixed;
       inset: 0;
-      background: #0a111f;
-      color: #00d7ff;
+      background: #111;
+      color: #0ff;
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 2.5rem;
+      font-size: 2rem;
       font-weight: 700;
-      letter-spacing: 0.15em;
       z-index: 9999;
       user-select: none;
+      letter-spacing: 2px;
     }
-    
-    /* Custom Cursor */
+
+    /* Custom cursor */
     .custom-cursor {
       position: fixed;
       top: 0; left: 0;
       width: 20px; height: 20px;
-      background: #00d7ff;
+      background: #0ff;
       border-radius: 50%;
       pointer-events: none;
       mix-blend-mode: difference;
-      transition: transform 0.15s ease, background-color 0.3s ease;
+      transition: transform 0.15s ease;
       z-index: 10000;
-      transform: translate3d(-50%, -50%, 0);
+      transform-origin: center center;
     }
-    a:hover ~ .custom-cursor,
-    button:hover ~ .custom-cursor,
-    .clock-card:hover ~ .custom-cursor,
-    .clock-card.focused ~ .custom-cursor {
-      transform: translate3d(-50%, -50%, 0) scale(2);
-      background-color: #00fff5;
-    }
-    
-    /* Header & Title */
+
+    /* Header & Search */
     header {
-      padding: 2rem 4vw 1rem;
-      background: linear-gradient(90deg, #001d27, #003246);
-      box-shadow: 0 2px 15px #001d27aa;
       position: sticky;
       top: 0;
-      z-index: 5000;
+      background: #111;
+      padding: 1rem 2rem;
+      z-index: 50;
+      border-bottom: 1px solid #0ff4;
       display: flex;
-      justify-content: space-between;
+      flex-wrap: wrap;
       align-items: center;
-      user-select: none;
+      justify-content: space-between;
+      gap: 1rem;
     }
+
     header h1 {
       margin: 0;
       font-weight: 700;
-      font-size: clamp(1.8rem, 3vw, 2.8rem);
-      letter-spacing: 0.08em;
-      color: #00d7ff;
+      font-size: 1.8rem;
+      user-select: none;
+      color: #0ff;
+      letter-spacing: 0.05em;
     }
-    
-    /* Search bar */
+
     #search-input {
-      font-size: 1rem;
+      flex-grow: 1;
+      min-width: 200px;
+      max-width: 400px;
       padding: 0.6rem 1rem;
-      border-radius: 999px;
+      font-size: 1rem;
       border: none;
-      outline: none;
-      width: 260px;
-      max-width: 80vw;
-      background: #031721;
-      color: #00d7ff;
-      box-shadow: 0 0 8px #00d7ff88;
-      transition: box-shadow 0.3s ease;
+      border-radius: 4px;
+      outline-offset: 2px;
+      outline-color: #0ff;
+      background: #222;
+      color: #0ff;
+      transition: background 0.3s ease;
     }
     #search-input::placeholder {
-      color: #004860;
+      color: #0ff8;
     }
     #search-input:focus {
-      box-shadow: 0 0 12px #00ffffcc;
+      background: #333;
     }
-    
-    /* Settings button */
-    #settings-toggle {
-      font-size: 1.6rem;
-      background: none;
-      border: none;
-      color: #00d7ff;
-      cursor: pointer;
-      padding: 0.3rem 0.6rem;
-      border-radius: 6px;
-      transition: background-color 0.25s ease;
-    }
-    #settings-toggle:hover,
-    #settings-toggle:focus {
-      background-color: #003f56;
-      outline: none;
-    }
-    
+
     /* Settings panel */
     #settings-panel {
-      position: fixed;
-      bottom: 1.8rem;
-      right: 1.8rem;
-      background: #001f2e;
-      border-radius: 10px;
-      padding: 1rem 1.4rem;
-      box-shadow: 0 0 20px #00d7ffaa;
-      font-size: 0.95rem;
-      color: #00d7ff;
-      width: 280px;
-      max-width: 90vw;
-      display: none;
-      z-index: 10001;
+      background: #111;
+      border: 1px solid #0ff4;
+      border-radius: 6px;
+      padding: 0.6rem 1rem;
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
       user-select: none;
     }
+
     #settings-panel label {
+      cursor: pointer;
+      font-size: 0.9rem;
+      color: #0ff;
       display: flex;
       align-items: center;
-      margin-bottom: 1rem;
-      cursor: pointer;
-    }
-    #settings-panel label span {
-      flex: 1;
-      user-select: none;
+      gap: 0.4rem;
     }
     #settings-panel input[type="checkbox"] {
-      margin-left: 0.8rem;
-      width: 18px;
-      height: 18px;
+      width: 16px;
+      height: 16px;
       cursor: pointer;
+      accent-color: #0ff;
     }
-    
-    /* Sound toggle */
-    #sound-toggle {
-      margin-top: 0.2rem;
-      font-weight: 700;
-      font-size: 1rem;
-      background: #003f56;
-      border: none;
-      color: #00d7ff;
-      padding: 0.4rem 0.8rem;
-      border-radius: 8px;
-      cursor: pointer;
+
+    /* Main content wrapper with locomotive scroll container */
+    main[data-scroll-container] {
+      padding: 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
       user-select: none;
-      transition: background-color 0.3s ease;
     }
-    #sound-toggle:hover,
-    #sound-toggle:focus {
-      background-color: #005e7c;
-      outline: none;
-    }
-    
-    /* Main container */
-    main {
-      padding: 1rem 4vw 4rem;
-      max-width: 1200px;
-      margin: auto;
-      min-height: 90vh;
-      outline: none;
-    }
-    
-    /* Clocks grid */
+
+    /* Clocks Grid */
     #clocks-container {
+      margin-top: 2rem;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1.2rem;
-      margin-top: 1.8rem;
-      outline: none;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
     }
-    
-    /* Clock card */
-    .clock-card {
-      background: #001f2e;
+
+    .clock {
+      background: #111;
       border-radius: 12px;
-      padding: 1rem 1.2rem 1.5rem;
-      box-shadow: 0 0 10px #00d7ff88;
-      transition: box-shadow 0.3s ease, transform 0.3s ease;
-      cursor: pointer;
-      user-select: none;
+      box-shadow: 0 0 10px #0ff4;
+      padding: 15px 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      text-align: center;
-      outline-offset: 2px;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      cursor: default;
     }
-    .clock-card:hover,
-    .clock-card.focused {
-      box-shadow: 0 0 22px #00fff5dd;
-      transform: scale(1.04);
-      z-index: 10;
-      outline: none;
+    .clock:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 0 20px #0fff;
     }
-    
-    /* Location text */
-    .location {
-      font-size: 1.25rem;
+    .clock h3 {
+      margin: 0 0 0.4rem 0;
       font-weight: 700;
-      color: #00d7ff;
-      margin-bottom: 0.15rem;
+      font-size: 1.2rem;
+      text-align: center;
+      color: #0ff;
+      text-shadow: 0 0 8px #0ff8;
+    }
+
+    .digital-time {
+      font-family: monospace;
+      font-size: 1.5rem;
+      letter-spacing: 0.12em;
+      margin-bottom: 8px;
+      color: #0ff;
       user-select: text;
     }
-    /* Country text */
-    .country {
-      font-size: 1rem;
-      font-weight: 600;
-      color: #00a9cc;
-      margin-bottom: 0.8rem;
-      user-select: text;
-    }
-    /* Timezone text */
-    .timezone-label {
-      font-size: 0.8rem;
-      font-weight: 400;
-      color: #0088aa;
-      user-select: text;
-      margin-top: 0.8rem;
-    }
-    
-    /* Highlighted search */
-    .highlight {
-      background-color: #004860;
-      border-radius: 3px;
-      padding: 0 4px;
-      color: #00ffff;
-    }
-    
-    /* Digital clock style */
-    .digital-clock {
-      font-family: 'Courier New', Courier, monospace;
-      font-size: 1.8rem;
-      letter-spacing: 0.06em;
-      color: #00ffff;
-      user-select: none;
-      text-shadow:
-        0 0 6px #00d7ff,
-        0 0 12px #00d7ffaa;
-      margin-bottom: 0.6rem;
-    }
-    
+
     /* Analog clock canvas */
-    canvas.clock-canvas {
-      user-select: none;
-      margin-bottom: 0.6rem;
-      filter: drop-shadow(0 0 5px #00d7ff99);
+    .analog-clock {
+      width: 150px;
+      height: 150px;
       border-radius: 50%;
-      background: #011523;
-      display: block;
-      margin-left: auto;
-      margin-right: auto;
+      background: #000;
+      box-shadow: 0 0 12px #0ff8 inset;
+      user-select: none;
     }
-    
-    /* Responsive */
+
+    /* Responsive tweaks */
     @media (max-width: 600px) {
       #clocks-container {
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-        gap: 1rem;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 15px;
       }
-      .digital-clock {
-        font-size: 1.2rem;
+      .analog-clock {
+        width: 120px;
+        height: 120px;
       }
-      .location {
+      .clock h3 {
         font-size: 1rem;
       }
-      .country {
-        font-size: 0.85rem;
+      .digital-time {
+        font-size: 1.2rem;
       }
     }
+
   </style>
 </head>
 <body>
-  <div class="loader" role="alert" aria-live="assertive" aria-busy="true">Loading Clocks...</div>
-  <div class="custom-cursor"></div>
-  
-  <header>
-    <h1>Hall of Clocks</h1>
-    <input id="search-input" type="search" aria-label="Search cities, countries, or timezones" placeholder="Search timezones, cities, countries..." autocomplete="off" />
-    <button id="settings-toggle" aria-label="Open settings panel" aria-haspopup="true" aria-expanded="false" title="Settings ⚙️">⚙️</button>
-  </header>
-  
-  <main id="main-content" tabindex="-1" data-scroll-container>
-    <section id="clocks-container" role="list" aria-live="polite" aria-relevant="additions"></section>
-  </main>
-  
-  <aside id="settings-panel" aria-label="Settings Panel" role="region" aria-hidden="true" tabindex="-1">
-    <label for="toggle-12h"><span>Use 12-hour format</span><input type="checkbox" id="toggle-12h" aria-checked="false" /></label>
-    <label for="toggle-analog"><span>Use Analog clocks</span><input type="checkbox" id="toggle-analog" aria-checked="false" /></label>
-    <button id="sound-toggle" aria-pressed="false" aria-label="Toggle sound">🔈 Sound Off</button>
-  </aside>
-  
-  <script>
-    // Timezones dataset - partial sample, add more or replace with full dataset as needed
+
+<div class="loader">Loading...</div>
+<div class="custom-cursor"></div>
+
+<header>
+  <h1>Hall of Clocks 🌍</h1>
+  <input id="search-input" type="search" placeholder="Search city, country, or timezone..." aria-label="Search clocks" autocomplete="off" />
+  <div id="settings-panel" role="region" aria-label="Clock settings">
+    <label><input type="checkbox" id="toggle-12h" /> 12-Hour Format</label>
+    <label><input type="checkbox" id="toggle-analog" checked /> Show Analog Clocks</label>
+  </div>
+</header>
+
+<main id="main-content" data-scroll-container>
+  <section id="clocks-container" aria-live="polite" aria-atomic="true"></section>
+</main>
+
+<script>
+  // Wait for DOM ready
+  document.addEventListener('DOMContentLoaded', () => {
+    // Dataset - replace this array with your full dataset!
     const timezones = [
       // Africa
       {zone:"Africa/Abidjan", country:"Côte d'Ivoire", city:"Abidjan"},
@@ -708,343 +627,220 @@
       {zone:"Pacific/Tongatapu", country:"Tonga", city:"Tongatapu"},
       {zone:"Pacific/Wake", country:"Wake Island", city:"Wake"},
       {zone:"Pacific/Wallis", country:"Wallis and Futuna", city:"Wallis"}
-    ];
-    
+    ]
+
     // Elements
     const clocksContainer = document.getElementById("clocks-container");
     const searchInput = document.getElementById("search-input");
-    const settingsToggle = document.getElementById("settings-toggle");
-    const settingsPanel = document.getElementById("settings-panel");
     const toggle12h = document.getElementById("toggle-12h");
     const toggleAnalog = document.getElementById("toggle-analog");
-    const soundToggle = document.getElementById("sound-toggle");
-    
-    // LocalStorage keys
-    const STORAGE_KEY_12H = "hallofclocks_12h_format";
-    const STORAGE_KEY_ANALOG = "hallofclocks_analog";
-    
-    // States
-    let is12HourFormat = JSON.parse(localStorage.getItem(STORAGE_KEY_12H)) || false;
-    let isAnalogClock = JSON.parse(localStorage.getItem(STORAGE_KEY_ANALOG)) || false;
-    let clocksIntervals = [];
-    let isSoundOn = false;
-    let audioCtx, oscillator;
-    
-    // Initialize UI states
-    toggle12h.checked = is12HourFormat;
-    toggleAnalog.checked = isAnalogClock;
-    
-    // Highlight search matches
-    function highlightText(text, query) {
-      if (!query) return text;
-      const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, "gi");
-      return text.replace(regex, '<span class="highlight">$1</span>');
-    }
-    
-    // Create digital clock element
-    function createDigitalClock(zone, is12h) {
-      const el = document.createElement("div");
-      el.className = "digital-clock";
-      function update() {
-        try {
-          const now = new Date();
-          const options = {
-            timeZone: zone,
-            hour12: is12h,
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-          };
-          const formatter = new Intl.DateTimeFormat([], options);
-          el.textContent = formatter.format(now);
-        } catch {
-          el.textContent = "N/A";
-        }
-      }
-      update();
-      const interval = setInterval(update, 1000);
-      return { el, interval };
-    }
-    
-    // Create analog clock canvas element
-    function createAnalogClock(zone, is12h) {
-      const canvas = document.createElement("canvas");
-      canvas.className = "clock-canvas";
-      canvas.width = 130;
-      canvas.height = 130;
-      const ctx = canvas.getContext("2d");
-    
-      function drawClock() {
-        const now = new Date();
-        try {
-          const parts = new Intl.DateTimeFormat("en-US", {
-            timeZone: zone,
-            hour12: is12h,
-            hour: "numeric",
-            minute: "numeric",
-            second: "numeric",
-          }).formatToParts(now);
-          
-          let h = 0, m = 0, s = 0;
-          for (const part of parts) {
-            if (part.type === "hour") h = parseInt(part.value);
-            if (part.type === "minute") m = parseInt(part.value);
-            if (part.type === "second") s = parseInt(part.value);
-          }
-          
-          // Clear canvas
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-          // Draw background circle
-          ctx.beginPath();
-          ctx.arc(65, 65, 60, 0, Math.PI * 2);
-          ctx.fillStyle = "#001824";
-          ctx.fill();
-    
-          // Draw clock outline
-          ctx.lineWidth = 5;
-          ctx.strokeStyle = "#00d7ff";
-          ctx.shadowColor = "#00d7ffbb";
-          ctx.shadowBlur = 12;
-          ctx.beginPath();
-          ctx.arc(65, 65, 60, 0, Math.PI * 2);
-          ctx.stroke();
-    
-          ctx.shadowBlur = 0;
-    
-          // Center
-          ctx.translate(65, 65);
-    
-          // Draw hour marks
-          ctx.strokeStyle = "#007ba7";
-          ctx.lineWidth = 3;
-          for (let i = 0; i < 12; i++) {
-            ctx.beginPath();
-            ctx.moveTo(50, 0);
-            ctx.lineTo(58, 0);
-            ctx.stroke();
-            ctx.rotate(Math.PI / 6);
-          }
-    
-          // Reset rotation
-          ctx.rotate(-((Math.PI / 6) * 12));
-    
-          // Draw hands
-          const secAngle = (Math.PI / 30) * s;
-          const minAngle = (Math.PI / 30) * m + secAngle / 60;
-          let hourValue = h;
-          if (!is12h && hourValue >= 12) hourValue -= 12;
-          const hourAngle = (Math.PI / 6) * hourValue + minAngle / 12;
-    
-          // Hour hand
-          ctx.strokeStyle = "#00d7ff";
-          ctx.lineWidth = 6;
-          ctx.beginPath();
-          ctx.moveTo(0, 0);
-          ctx.lineTo(Math.cos(hourAngle - Math.PI / 2) * 35, Math.sin(hourAngle - Math.PI / 2) * 35);
-          ctx.stroke();
-    
-          // Minute hand
-          ctx.lineWidth = 4;
-          ctx.beginPath();
-          ctx.moveTo(0, 0);
-          ctx.lineTo(Math.cos(minAngle - Math.PI / 2) * 50, Math.sin(minAngle - Math.PI / 2) * 50);
-          ctx.stroke();
-    
-          // Second hand
-          ctx.strokeStyle = "#ff4c4c";
-          ctx.lineWidth = 2;
-          ctx.beginPath();
-          ctx.moveTo(0, 10);
-          ctx.lineTo(Math.cos(secAngle - Math.PI / 2) * 55, Math.sin(secAngle - Math.PI / 2) * 55);
-          ctx.stroke();
-    
-          // Center circle
-          ctx.fillStyle = "#00d7ff";
-          ctx.beginPath();
-          ctx.arc(0, 0, 7, 0, Math.PI * 2);
-          ctx.fill();
-    
-          ctx.resetTransform();
-        } catch {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.fillStyle = "#ff4c4c";
-          ctx.font = "14px monospace";
-          ctx.textAlign = "center";
-          ctx.fillText("Error", 65, 65);
-        }
-      }
-      drawClock();
-      const interval = setInterval(drawClock, 1000);
-      return { el: canvas, interval };
-    }
-    
-    // Render clocks
-    function renderClocks(data, filter = "") {
-      // Clear old clocks and intervals
-      clocksIntervals.forEach(i => clearInterval(i));
-      clocksIntervals = [];
-      clocksContainer.innerHTML = "";
-      filter = filter.toLowerCase();
-    
-      data.forEach(({zone, country, city}, idx) => {
-        if (filter) {
-          // Filter by city, country, or zone
-          if (!zone.toLowerCase().includes(filter) &&
-              !country.toLowerCase().includes(filter) &&
-              !city.toLowerCase().includes(filter)) return;
-        }
-    
-        const card = document.createElement("article");
-        card.className = "clock-card";
-        card.tabIndex = 0;
-        card.setAttribute("role", "listitem");
-        card.setAttribute("aria-label", `${city}, ${country} clock`);
-    
-        // Location
-        const loc = document.createElement("div");
-        loc.className = "location";
-        loc.innerHTML = highlightText(city, filter);
-        card.appendChild(loc);
-    
-        // Country
-        const ctry = document.createElement("div");
-        ctry.className = "country";
-        ctry.innerHTML = highlightText(country, filter);
-        card.appendChild(ctry);
-    
-        // Time display
-        let clockObj;
-        if (isAnalogClock) clockObj = createAnalogClock(zone, is12HourFormat);
-        else clockObj = createDigitalClock(zone, is12HourFormat);
-        card.appendChild(clockObj.el);
-        clocksIntervals.push(clockObj.interval);
-    
-        // Timezone label
-        const tzLabel = document.createElement("div");
-        tzLabel.className = "timezone-label";
-        tzLabel.textContent = zone.replace("_", " ");
-        card.appendChild(tzLabel);
-    
-        clocksContainer.appendChild(card);
+    const loader = document.querySelector(".loader");
+    const cursor = document.querySelector(".custom-cursor");
+
+    // Custom cursor movement
+    window.addEventListener("mousemove", e => {
+      cursor.style.left = e.clientX + "px";
+      cursor.style.top = e.clientY + "px";
+    });
+    // Cursor enlarge on hover for interactive elements
+    document.querySelectorAll("input, label").forEach(el => {
+      el.addEventListener("mouseenter", () => (cursor.style.transform = "scale(2)"));
+      el.addEventListener("mouseleave", () => (cursor.style.transform = "scale(1)"));
+    });
+
+    // Format time helper
+    function formatTime(date, use12h) {
+      return date.toLocaleTimeString('en-US', {
+        hour12: use12h,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
       });
     }
-    
-    // Search filtering
-    searchInput.addEventListener("input", () => {
-      renderClocks(timezones, searchInput.value.trim());
-    });
-    
-    // Settings toggle
-    settingsToggle.addEventListener("click", () => {
-      const isVisible = settingsPanel.style.display === "block";
-      settingsPanel.style.display = isVisible ? "none" : "block";
-      settingsToggle.setAttribute("aria-expanded", isVisible ? "false" : "true");
-      if (!isVisible) settingsPanel.focus();
-    });
-    
-    // Settings checkboxes
-    toggle12h.addEventListener("change", () => {
-      is12HourFormat = toggle12h.checked;
-      localStorage.setItem(STORAGE_KEY_12H, JSON.stringify(is12HourFormat));
-      renderClocks(timezones, searchInput.value.trim());
-    });
-    toggleAnalog.addEventListener("change", () => {
-      isAnalogClock = toggleAnalog.checked;
-      localStorage.setItem(STORAGE_KEY_ANALOG, JSON.stringify(isAnalogClock));
-      renderClocks(timezones, searchInput.value.trim());
-    });
-    
-    // Sound toggle
-    soundToggle.addEventListener("click", () => {
-      if (isSoundOn) {
-        stopSound();
-      } else {
-        startSound();
+
+    // Create analog clock canvas for a given date
+    function createAnalogClock(date) {
+      const canvas = document.createElement('canvas');
+      canvas.classList.add('analog-clock');
+      canvas.width = 150;
+      canvas.height = 150;
+      const ctx = canvas.getContext('2d');
+      const radius = 70;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.translate(radius + 10, radius + 10);
+
+      // Clock face
+      ctx.beginPath();
+      ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+      ctx.fillStyle = '#000';
+      ctx.fill();
+      ctx.strokeStyle = '#0ff';
+      ctx.lineWidth = 5;
+      ctx.stroke();
+
+      // Hour marks
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = '#0ff';
+      for(let i=0; i<12; i++) {
+        ctx.beginPath();
+        const angle = (i * Math.PI / 6);
+        const xStart = Math.cos(angle) * (radius - 10);
+        const yStart = Math.sin(angle) * (radius - 10);
+        const xEnd = Math.cos(angle) * radius;
+        const yEnd = Math.sin(angle) * radius;
+        ctx.moveTo(xStart, yStart);
+        ctx.lineTo(xEnd, yEnd);
+        ctx.stroke();
       }
-    });
-    
-    function startSound() {
-      if (isSoundOn) return;
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      oscillator = audioCtx.createOscillator();
-      oscillator.type = "sine";
-      oscillator.frequency.setValueAtTime(440, audioCtx.currentTime);
-      oscillator.start();
-      const gainNode = audioCtx.createGain();
-      gainNode.gain.setValueAtTime(0.03, audioCtx.currentTime);
-      oscillator.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-      isSoundOn = true;
-      soundToggle.textContent = "🔊 Sound On";
-      soundToggle.setAttribute("aria-pressed", "true");
+
+      // Hands
+      let hour = date.getHours() % 12;
+      let minute = date.getMinutes();
+      let second = date.getSeconds();
+
+      // Hour hand
+      ctx.lineWidth = 7;
+      ctx.strokeStyle = '#0ff';
+      ctx.beginPath();
+      const hourAngle = (hour + minute / 60) * (Math.PI / 6);
+      ctx.moveTo(0, 0);
+      ctx.lineTo(Math.cos(hourAngle - Math.PI/2)*40, Math.sin(hourAngle - Math.PI/2)*40);
+      ctx.stroke();
+
+      // Minute hand
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      const minuteAngle = (minute + second / 60) * (Math.PI / 30);
+      ctx.moveTo(0, 0);
+      ctx.lineTo(Math.cos(minuteAngle - Math.PI/2)*55, Math.sin(minuteAngle - Math.PI/2)*55);
+      ctx.stroke();
+
+      // Second hand
+      ctx.strokeStyle = '#f00';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      const secondAngle = second * (Math.PI / 30);
+      ctx.moveTo(0, 0);
+      ctx.lineTo(Math.cos(secondAngle - Math.PI/2)*60, Math.sin(secondAngle - Math.PI/2)*60);
+      ctx.stroke();
+
+      ctx.translate(-radius - 10, -radius - 10);
+      return canvas;
     }
-    
-    function stopSound() {
-      if (!audioCtx) return;
-      oscillator.stop();
-      oscillator.disconnect();
-      audioCtx.close();
-      audioCtx = null;
-      isSoundOn = false;
-      soundToggle.textContent = "🔈 Sound Off";
-      soundToggle.setAttribute("aria-pressed", "false");
+
+    // Render clocks array
+    let intervalHandles = [];
+    function renderClocks(list) {
+      // Clear previous intervals (to avoid stacking)
+      intervalHandles.forEach(id => clearInterval(id));
+      intervalHandles = [];
+
+      clocksContainer.innerHTML = "";
+      const use12h = toggle12h.checked;
+      const showAnalog = toggleAnalog.checked;
+
+      list.forEach(({zone, country, city}) => {
+        const clockDiv = document.createElement('div');
+        clockDiv.className = "clock";
+        clockDiv.setAttribute('role', 'article');
+        clockDiv.setAttribute('tabindex', '0');
+        clockDiv.setAttribute('aria-label', `${city}, ${country} time`);
+
+        const title = document.createElement('h3');
+        title.textContent = `${city}, ${country}`;
+        clockDiv.appendChild(title);
+
+        const digitalTime = document.createElement('div');
+        digitalTime.className = "digital-time";
+        clockDiv.appendChild(digitalTime);
+
+        let analogCanvas = null;
+        if(showAnalog) {
+          analogCanvas = createAnalogClock(new Date());
+          clockDiv.appendChild(analogCanvas);
+        }
+
+        clocksContainer.appendChild(clockDiv);
+
+        // Update this clock every second
+        const updateClock = () => {
+          const now = new Date();
+          // get time string with timezone support
+          const timeStr = now.toLocaleString('en-US', { timeZone: zone });
+          const targetDate = new Date(timeStr);
+
+          digitalTime.textContent = formatTime(targetDate, use12h);
+
+          if(analogCanvas) {
+            // Remove old canvas, redraw
+            const newCanvas = createAnalogClock(targetDate);
+            clockDiv.replaceChild(newCanvas, analogCanvas);
+            analogCanvas = newCanvas;
+          }
+        };
+
+        updateClock();
+        intervalHandles.push(setInterval(updateClock, 1000));
+      });
     }
-    
-    // Custom cursor movement
-    const cursor = document.querySelector(".custom-cursor");
-    window.addEventListener("mousemove", e => {
-      cursor.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0) translate(-50%, -50%)`;
+
+    // Initial render
+    renderClocks(timezones);
+
+    // Search input handler
+    searchInput.addEventListener('input', () => {
+      const query = searchInput.value.trim().toLowerCase();
+      if (!query) {
+        renderClocks(timezones);
+        return;
+      }
+      const filtered = timezones.filter(({zone, country, city}) =>
+        zone.toLowerCase().includes(query) ||
+        country.toLowerCase().includes(query) ||
+        city.toLowerCase().includes(query)
+      );
+      renderClocks(filtered);
     });
-    
-    // Preloader & initial render
-    window.addEventListener("load", () => {
-      const loader = document.querySelector(".loader");
-      loader.style.opacity = "0";
-      setTimeout(() => loader.style.display = "none", 600);
-      renderClocks(timezones);
+
+    // Settings toggles re-render
+    toggle12h.addEventListener('change', () => renderClocks(timezones));
+    toggleAnalog.addEventListener('change', () => renderClocks(timezones));
+
+    // GSAP animations for header and clocks
+    gsap.from("header h1", {
+      y: -30,
+      opacity: 0,
+      duration: 1,
+      ease: "power4.out"
     });
-    
-    // GSAP & Locomotive Scroll integration
-    const scrollContainer = document.querySelector("[data-scroll-container]");
-    const locoScroll = new LocomotiveScroll({
-      el: scrollContainer,
+
+    // Initialize Locomotive Scroll
+    const scroll = new LocomotiveScroll({
+      el: document.querySelector("[data-scroll-container]"),
       smooth: true,
-      smartphone: { smooth: true },
-      tablet: { smooth: true },
-      getDirection: true,
-      getSpeed: true,
+      multiplier: 1.2
     });
-    locoScroll.on("scroll", ScrollTrigger.update);
-    
-    ScrollTrigger.scrollerProxy(scrollContainer, {
-      scrollTop(value) {
-        return arguments.length
-          ? locoScroll.scrollTo(value, 0, 0)
-          : locoScroll.scroll.instance.scroll.y;
-      },
-      getBoundingClientRect() {
-        return { top: 0, left: 0, width: window.innerWidth, height: window.innerHeight };
-      },
-      pinType: scrollContainer.style.transform ? "transform" : "fixed",
-    });
-    
-    ScrollTrigger.addEventListener("refresh", () => locoScroll.update());
-    ScrollTrigger.refresh();
-    
-    // Animate header and clocks on load
-    gsap.from("header h1", { opacity: 0, y: -20, duration: 1.2, ease: "power3.out" });
-    gsap.from("#search-input", { opacity: 0, y: -20, duration: 1.2, delay: 0.15, ease: "power3.out" });
-    gsap.from("#settings-toggle", { opacity: 0, y: -20, duration: 1.2, delay: 0.3, ease: "power3.out" });
-    gsap.from("#clocks-container", { opacity: 0, y: 20, duration: 1.8, delay: 0.5, ease: "power3.out", stagger: 0.03 });
-    
-    // Animated tab title (cycles through)
-    const titles = ["Hall of Clocks", "Every Timezone", "World Clock Hub"];
-    let titleIndex = 0;
-    setInterval(() => {
-      document.title = titles[titleIndex];
-      titleIndex = (titleIndex + 1) % titles.length;
-    }, 3000);
-  </script>
+
+    // Hide loader after page ready & locomotive initialized
+    window.setTimeout(() => {
+      gsap.to(".loader", {
+        y: "-100%",
+        duration: 1,
+        ease: "power4.inOut",
+        onComplete: () => {
+          document.querySelector(".loader").style.display = "none";
+        }
+      });
+    }, 1500);
+
+    // Refresh locomotive scroll on render and window resize
+    function refreshScroll() {
+      scroll.update();
+    }
+    window.addEventListener('resize', refreshScroll);
+
+  });
+</script>
+
 </body>
 </html>
